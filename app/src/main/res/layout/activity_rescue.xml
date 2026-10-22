@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="48dp">
+
+    <TextView
+        style="@style/Text.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/rescue_title" />
+
+    <TextView
+        style="@style/Text.Secondary"
+        android:layout_width="560dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="@string/rescue_text" />
+
+    <Button
+        android:id="@+id/retry"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/rescue_retry" />
+
+    <Button
+        android:id="@+id/openStock"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:text="@string/rescue_open_stock" />
+
+    <Button
+        android:id="@+id/restore"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:text="@string/home_use_stock" />
+
+    <TextView
+        android:id="@+id/status"
+        style="@style/Text.Small"
+        android:layout_width="560dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center" />
+</LinearLayout>

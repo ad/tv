@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Home" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/screen</item>
+        <item name="android:windowDisablePreview">false</item>
+        <item name="android:colorAccent">#FFFFFFFF</item>
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+        <item name="android:alertDialogTheme">@style/Theme.Dialog</item>
+    </style>
+
+    <style name="Theme.Dialog" parent="android:Theme.DeviceDefault.Dialog.Alert">
+        <item name="android:colorAccent">#FF8AB4F8</item>
+    </style>
+
+    <style name="Text">
+        <item name="android:textColor">@color/text</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:shadowColor">#66000000</item>
+        <item name="android:shadowRadius">6</item>
+        <item name="android:shadowDy">1</item>
+    </style>
+
+    <style name="Text.Clock">
+        <item name="android:textSize">120sp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="Text.Temp">
+        <item name="android:textSize">40sp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="Text.Secondary">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="Text.Small">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="Text.Tiny">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <style name="Text.Caption">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="Text.Title">
+        <item name="android:textSize">28sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TopButton">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:background">@drawable/top_button_bg</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:tint">@color/top_button_tint</item>
+        <item name="android:focusable">true</item>
+    </style>
+</resources>
