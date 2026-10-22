@@ -6,11 +6,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.graphics.Path
 import android.graphics.PixelFormat
+import android.os.SystemClock
 import android.provider.Settings
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.Toast
 
 /**
  * System-wide remote cursor. Accessibility is the only way a third-party app can see remote keys
@@ -67,7 +70,24 @@ class CursorService : AccessibilityService(), CursorHost {
         dispatchGesture(GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 0, durationMs)).build(), null, null)
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (SystemClock.elapsedRealtime() > pairUntil || event?.packageName?.toString() != TV_SETTINGS) return
+        val texts = ArrayList<String>()
+        collectText(rootInActiveWindow ?: return, texts)
+        val code = texts.firstOrNull { CODE.matches(it) } ?: return
+        val (host, port) = texts.firstNotNullOfOrNull { HOST_PORT.matchEntire(it) }?.destructured ?: return
+        pairUntil = 0
+        Thread {
+            val error = runCatching { HomeSwitch.pair(this, host, port.toInt(), code) }.exceptionOrNull()
+            val text = getString(R.string.adb_pair) + ": " + (error?.let { it.message ?: it.javaClass.simpleName } ?: getString(R.string.adb_paired))
+            mainExecutor.execute { Toast.makeText(this, text, Toast.LENGTH_LONG).show() }
+        }.start()
+    }
+
+    private fun collectText(node: AccessibilityNodeInfo, out: MutableList<String>) {
+        node.text?.let { out += it.toString().trim() }
+        for (i in 0 until node.childCount) node.getChild(i)?.let { collectText(it, out) }
+    }
 
     override fun onInterrupt() {}
 
@@ -80,6 +100,16 @@ class CursorService : AccessibilityService(), CursorHost {
 
     companion object {
         @Volatile var running = false
+
+        private const val TV_SETTINGS = "com.android.tv.settings"
+        private val CODE = Regex("\\d{6}")
+        private val HOST_PORT = Regex("(\\d{1,3}(?:\\.\\d{1,3}){3}):(\\d+)")
+        @Volatile private var pairUntil = 0L
+
+        /** For the next few minutes, pair with the code shown in the TV's "Pair device with pairing code" dialog. */
+        fun armPairing() {
+            pairUntil = SystemClock.elapsedRealtime() + 5 * 60_000
+        }
 
         private fun component(context: Context) = ComponentName(context, CursorService::class.java).flattenToString()
 
