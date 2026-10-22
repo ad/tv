@@ -14,7 +14,8 @@ class Prefs(context: Context) {
 
     /** null = colour preset; otherwise "asset:///…", "content://…", "file://…" or an http(s) URL. */
     var backgroundVideo: String?
-        get() = sp.getString("bg_video", null)
+        // The bundled 4K copy is gone; a saved choice of it falls back to the 1080p one.
+        get() = sp.getString("bg_video", null)?.let { if (it.startsWith("asset:///")) it.replace("%204K.mp4", "%201080p.mp4") else it }
         set(v) = sp.edit().putString("bg_video", v).apply()
 
     /** Why the selected video could not play, shown in background settings; null when it played. */

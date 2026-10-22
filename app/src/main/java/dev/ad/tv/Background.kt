@@ -34,7 +34,7 @@ object Backgrounds {
         return GradientDrawable(GradientDrawable.Orientation.TL_BR, colors)
     }
 
-    /** Videos bundled into the `video` flavor (the repo's video/ folder becomes assets). */
+    /** Videos bundled into the APK (the repo's video/ folder becomes assets). */
     fun bundledVideos(context: Context): List<String> =
         context.assets.list("")?.filter { it.endsWith(".mp4", true) || it.endsWith(".mkv", true) || it.endsWith(".webm", true) }
             ?.map { "asset:///" + Uri.encode(it) } ?: emptyList()
