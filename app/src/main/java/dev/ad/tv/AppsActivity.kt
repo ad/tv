@@ -17,6 +17,11 @@ class AppsActivity : Activity() {
     private lateinit var grid: RecyclerView
     private var apps: List<AppEntry> = emptyList()
 
+    private val cursor by lazy { ActivityCursor(this) }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean =
+        cursor.onKey(event) || super.dispatchKeyEvent(event)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_apps)

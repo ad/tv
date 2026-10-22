@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.InputType
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -40,6 +41,11 @@ class SettingsActivity : Activity() {
     private lateinit var hint: TextView
     private val stack = ArrayList<String>()
     private var homeLog = ""
+
+    private val cursor by lazy { ActivityCursor(this) }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        cursor.onKey(event) || super.dispatchKeyEvent(event)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +93,7 @@ class SettingsActivity : Activity() {
             "feed" -> feedPage()
             "hidden" -> hiddenPage()
             "home" -> homePage()
+            "cursor" -> cursorPage()
         }
         val target = rows.getChildAt(focused ?: 0) ?: rows.getChildAt(0)
         target?.requestFocus()
@@ -151,6 +158,7 @@ class SettingsActivity : Activity() {
             }
         }
         row(getString(R.string.feed), on(prefs.feedEnabled)) { open("feed") }
+        row(getString(R.string.cursor), cursorModeName(cursorMode())) { open("cursor") }
         row(getString(R.string.home_screen), getString(if (HomeSwitch.isOurs(this)) R.string.home_this else R.string.home_stock)) {
             open("home")
         }
@@ -344,6 +352,80 @@ class SettingsActivity : Activity() {
         row(getString(R.string.usage_access), on(RecentApp.hasUsageAccess(this))) {
             runAdb(getString(R.string.usage_access)) { HomeSwitch.grantPermissions(this, ::log) }
         }
+    }
+
+    private fun cursorMode() = runCatching { CursorMode.valueOf(prefs.cursorMode) }.getOrDefault(CursorMode.LAUNCHER)
+
+    private fun cursorModeName(m: CursorMode) = getString(
+        when (m) {
+            CursorMode.OFF -> R.string.off
+            CursorMode.LAUNCHER -> R.string.cursor_launcher
+            CursorMode.EVERYWHERE -> R.string.cursor_everywhere
+        },
+    )
+
+    private fun keyName(code: Int) = KeyEvent.keyCodeToString(code).removePrefix("KEYCODE_")
+
+    private fun cursorPage() {
+        title.setText(R.string.cursor)
+        hint.setText(R.string.cursor_hint)
+        val mode = cursorMode()
+        row(getString(R.string.cursor_mode), cursorModeName(mode)) {
+            choose(getString(R.string.cursor_mode), CursorMode.entries, ::cursorModeName, mode) { next ->
+                prefs.cursorMode = next.name
+                setCursorService(next == CursorMode.EVERYWHERE)
+                changed()
+            }
+        }
+        if (mode == CursorMode.EVERYWHERE) {
+            row(getString(R.string.cursor_service_label), on(CursorService.isEnabled(this))) {
+                setCursorService(!CursorService.isEnabled(this))
+                changed()
+            }
+        }
+        row(getString(R.string.cursor_key), keyName(prefs.cursorKey)) { captureCursorKey() }
+        val speeds = listOf(0.6f, 1f, 1.6f)
+        val speedNames = listOf(R.string.speed_slow, R.string.speed_normal, R.string.speed_fast)
+        val speed = speeds.minByOrNull { kotlin.math.abs(it - prefs.cursorSpeed) }!!
+        row(getString(R.string.cursor_speed), getString(speedNames[speeds.indexOf(speed)])) {
+            choose(getString(R.string.cursor_speed), speeds, { getString(speedNames[speeds.indexOf(it)]) }, speed) {
+                prefs.cursorSpeed = it
+                changed()
+                Toast.makeText(this, R.string.cursor_speed_restart, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /** The service is switched on through secure settings when we may write them, else by the user. */
+    private fun setCursorService(enabled: Boolean) {
+        if (HomeSwitch.canWriteSecureSettings(this)) {
+            CursorService.setEnabled(this, enabled)
+        } else if (enabled && !CursorService.isEnabled(this)) {
+            Toast.makeText(this, R.string.cursor_enable_manually, Toast.LENGTH_LONG).show()
+            Apps.start(this, android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+    }
+
+    private fun captureCursorKey() {
+        val navigation = setOf(
+            KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_HOME,
+        )
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.cursor_key)
+            .setMessage(R.string.cursor_key_press)
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+        dialog.setOnKeyListener { d, code, event ->
+            if (code in navigation) return@setOnKeyListener false
+            if (event.action == KeyEvent.ACTION_UP) {
+                prefs.cursorKey = code
+                d.dismiss()
+                changed()
+            }
+            true
+        }
+        dialog.show()
     }
 
     private fun log(line: String) {

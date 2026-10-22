@@ -49,6 +49,7 @@ class HomeActivity : Activity() {
     private lateinit var btnInputs: ImageButton
 
     private lateinit var video: VideoBackground
+    private val cursor by lazy { ActivityCursor(this) }
     private val favAdapter = FavoritesAdapter(::onFavoriteClick, ::onFavoriteLongClick)
     private val feedAdapter = FeedAdapter(::onFeedClick, ::onFeedLongClick, ::onFeedSelected)
 
@@ -153,6 +154,7 @@ class HomeActivity : Activity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (cursor.onKey(event)) return true
         if (event.keyCode == KeyEvent.KEYCODE_BACK) return true
         return super.dispatchKeyEvent(event)
     }
@@ -252,7 +254,6 @@ class HomeActivity : Activity() {
         findViewById<TextView>(R.id.weatherToday).text = getString(
             R.string.today_range, signed(w.today.min) + "…" + signed(w.today.max) + "°", precip(w.today.precipMm),
         )
-        findViewById<TextView>(R.id.weatherCity).text = prefs.cityName
 
         val row = findViewById<LinearLayout>(R.id.forecast)
         row.removeAllViews()
