@@ -337,6 +337,10 @@ class HomeActivity : Activity() {
                 else {
                     FeedRepo.hide(this, item)
                     showFeed(feedItems)
+                    // The hidden card's view is recycled away, which throws focus out of the row.
+                    val next = feedAdapter.selectedPosition
+                    (feedList.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(next, 0)
+                    focusWhenLaidOut(feedList, next, attempts = 5)
                     Toast.makeText(this, R.string.hidden_toast, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -380,13 +384,13 @@ class HomeActivity : Activity() {
         val recent = RecentApp.last(this)
         val index = favorites.indexOf(recent).coerceAtLeast(0)
         favList.scrollToPosition(index)
-        focusWhenLaidOut(index, attempts = 5)
+        focusWhenLaidOut(favList, index, attempts = 5)
     }
 
-    private fun focusWhenLaidOut(index: Int, attempts: Int) {
-        val holder = favList.findViewHolderForAdapterPosition(index)
+    private fun focusWhenLaidOut(list: RecyclerView, index: Int, attempts: Int) {
+        val holder = list.findViewHolderForAdapterPosition(index)
         if (holder != null) holder.itemView.requestFocus()
-        else if (attempts > 0) favList.post { focusWhenLaidOut(index, attempts - 1) }
+        else if (attempts > 0) list.post { focusWhenLaidOut(list, index, attempts - 1) }
     }
 
     // ---- Top buttons ----------------------------------------------------------------------------
