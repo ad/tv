@@ -122,28 +122,31 @@
     <string name="speed_normal">Normal</string>
     <string name="speed_fast">Fast</string>
     <string name="cursor_service_label">TV Home cursor</string>
-    <string name="cursor_service_description">Shows a pointer controlled by the remote in any app and taps where it points. It reads the remote buttons, and the screen only while pairing with Wireless debugging: the code from the TV Settings pairing dialog.</string>
+    <string name="cursor_service_description">Shows a pointer controlled by the remote in any app and taps where it points. It reads only the remote buttons and does not read screen content.</string>
     <string name="cursor_enable_manually">Turn on “TV Home cursor” in Accessibility settings</string>
 
     <string name="home_screen">Home screen</string>
     <string name="home_this">This launcher</string>
-    <string name="home_stock">Google TV</string>
+    <string name="home_stock">Android TV</string>
     <string name="home_current">Current home screen</string>
-    <string name="home_hint">Switching uses Wireless debugging on this TV.\n1. Settings → System → About → press Build 7 times.\n2. Developer options → Wireless debugging → on.\n3. Press “Pair with this TV” here and confirm “Allow debugging?” with “Always allow” ticked. If the TV opens its settings instead, open “Pair device with pairing code”: the code is read on its own.\nAfter pairing, switching works both ways without a computer.</string>
+    <string name="home_hint">Switching uses this TV\'s own ADB on port 5555.
+1. Settings → System → About → press Build 7 times.
+2. Developer options → USB debugging → on.
+3. Port 5555 must be open: once from a computer, adb tcpip 5555 (again after a TV restart).
+4. Press “Pair with this TV” and confirm “Allow debugging?” with “Always allow” ticked.</string>
     <string name="home_use_this">Make this launcher the home screen</string>
-    <string name="home_use_stock">Restore Google TV home</string>
+    <string name="home_use_stock">Restore Android TV home</string>
     <string name="usage_access">Usage access (focus the last app)</string>
     <string name="adb_pair">Pair with this TV</string>
     <string name="adb_paired">Paired</string>
     <string name="adb_pair_hint">Not paired yet</string>
-    <string name="adb_pair_open_dialog">Open Wireless debugging → “Pair device with pairing code” and keep it open</string>
-    <string name="adb_pairing_failed">Pairing failed. Check the code.</string>
-    <string name="adb_connect_failed">Could not connect to Wireless debugging. Turn it on in Developer options.</string>
+    <string name="adb_port_closed">Port 5555 is closed. Run adb tcpip 5555 from a computer once (again after a TV restart).</string>
+    <string name="adb_not_accepted">“Allow debugging?” was not accepted on the TV.</string>
     <string name="wifi_owned">The Wi-Fi network was saved by %s and would be deleted. Forget the network in Settings and connect again, then retry.</string>
-    <string name="stock_restored">Google TV home restored</string>
+    <string name="stock_restored">Android TV home restored</string>
 
     <string name="rescue_title">TV Home keeps crashing</string>
-    <string name="rescue_text">The launcher crashed several times in a row. You can try again, open the Google TV home, or restore it permanently.</string>
+    <string name="rescue_text">The launcher crashed several times in a row. You can try again, open the Android TV home, or restore it permanently.</string>
     <string name="rescue_retry">Try again</string>
-    <string name="rescue_open_stock">Open Google TV home</string>
+    <string name="rescue_open_stock">Open Android TV home</string>
 </resources>

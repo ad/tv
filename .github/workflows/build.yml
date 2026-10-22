@@ -20,42 +20,42 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-cleanup: never
-
-      - name: Build debug APKs (pull requests)
-        if: github.event_name == 'pull_request'
-        run: ./gradlew --no-daemon assembleDebug
-
-      - name: Upload debug APKs
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: tv-home-debug-${{ github.run_number }}
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 14
+      - name: Android platform
+        run: |
+          [ -f "$ANDROID_HOME/platforms/android-36/android.jar" ] ||
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" > /dev/null
 
       # Releases must always be signed with the same key, or updates will not install over each other.
       - name: Decode keystore
-        if: github.event_name != 'pull_request'
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::KEYSTORE_BASE64 secret is not set (see README → Releases)"
-            exit 1
+            if [ "${{ github.event_name }}" != "pull_request" ]; then
+              echo "::error::KEYSTORE_BASE64 secret is not set (see README → Releases)"
+              exit 1
+            fi
+            exit 0
           fi
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
-      - name: Build release APKs
-        if: github.event_name != 'pull_request'
+      - name: Build APK
         env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 1.0.${{ github.run_number }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew --no-daemon assembleRelease
+        run: ./build.sh
+
+      - name: Upload APK (pull requests)
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tv-home-${{ github.run_number }}
+          path: tv-home.apk
+          retention-days: 14
 
       - name: Publish GitHub release
         if: github.event_name != 'pull_request'
@@ -64,7 +64,7 @@ jobs:
         run: |
           version="v1.0.${{ github.run_number }}"
           mkdir dist
-          cp app/build/outputs/apk/release/app-release.apk "dist/tv-home-$version.apk"
+          cp tv-home.apk "dist/tv-home-$version.apk"
           cp scripts/setup.sh dist/setup.sh
           gh release create "$version" dist/* \
             --target "${{ github.sha }}" \

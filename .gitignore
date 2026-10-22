@@ -6,3 +6,6 @@ local.properties
 .DS_Store
 *.jks
 *.keystore
+out/
+tv-home.apk
+tv-home.apk.idsig
