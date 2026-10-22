@@ -109,6 +109,22 @@
     <string name="kind_movies">Movies</string>
     <string name="kind_series">Series</string>
 
+    <string name="cursor">Remote cursor</string>
+    <string name="cursor_hint">A mouse pointer driven by the remote. Press the cursor key to show or hide it; arrows move it, OK clicks, holding OK long-presses, pushing against a screen edge scrolls. A real USB/Bluetooth mouse works without this.</string>
+    <string name="cursor_mode">Works in</string>
+    <string name="cursor_launcher">This launcher</string>
+    <string name="cursor_everywhere">All apps (accessibility)</string>
+    <string name="cursor_key">Cursor key</string>
+    <string name="cursor_key_press">Press the remote button that should show and hide the cursor.</string>
+    <string name="cursor_speed">Speed</string>
+    <string name="cursor_speed_restart">Applies the next time the cursor starts</string>
+    <string name="speed_slow">Slow</string>
+    <string name="speed_normal">Normal</string>
+    <string name="speed_fast">Fast</string>
+    <string name="cursor_service_label">TV Home cursor</string>
+    <string name="cursor_service_description">Shows a pointer controlled by the remote in any app and taps where it points. It reads only the remote buttons and does not read screen content.</string>
+    <string name="cursor_enable_manually">Turn on “TV Home cursor” in Accessibility settings</string>
+
     <string name="home_screen">Home screen</string>
     <string name="home_this">This launcher</string>
     <string name="home_stock">Google TV</string>

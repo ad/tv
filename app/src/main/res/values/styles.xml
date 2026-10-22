@@ -28,7 +28,7 @@
     </style>
 
     <style name="Text.Temp">
-        <item name="android:textSize">40sp</item>
+        <item name="android:textSize">52sp</item>
         <item name="android:fontFamily">sans-serif-light</item>
         <item name="android:includeFontPadding">false</item>
     </style>
@@ -40,6 +40,11 @@
 
     <style name="Text.Small">
         <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="Text.Weather">
+        <item name="android:textSize">17sp</item>
         <item name="android:textColor">@color/text_secondary</item>
     </style>
 

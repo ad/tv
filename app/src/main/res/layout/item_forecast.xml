@@ -7,13 +7,13 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="10dp"
-    android:paddingTop="5dp"
+    android:paddingTop="6dp"
     android:paddingEnd="12dp"
-    android:paddingBottom="5dp">
+    android:paddingBottom="6dp">
 
     <TextView
         android:id="@+id/fDay"
-        style="@style/Text.Small"
+        style="@style/Text.Weather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="22dp" />
@@ -23,11 +23,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
-        android:textSize="16sp" />
+        android:textSize="19sp" />
 
     <TextView
         android:id="@+id/fTemp"
-        style="@style/Text.Small"
+        style="@style/Text.Weather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"

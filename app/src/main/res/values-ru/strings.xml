@@ -110,6 +110,22 @@
     <string name="kind_movies">Фильмы</string>
     <string name="kind_series">Сериалы</string>
 
+    <string name="cursor">Курсор с пульта</string>
+    <string name="cursor_hint">Указатель мыши, которым управляет пульт. Кнопка курсора показывает и прячет его, стрелки двигают, OK кликает, удержание OK — долгое нажатие, упор в край экрана прокручивает. Обычная USB/Bluetooth-мышь работает и без этого.</string>
+    <string name="cursor_mode">Где работает</string>
+    <string name="cursor_launcher">В этом лаунчере</string>
+    <string name="cursor_everywhere">Во всех приложениях (спецвозможности)</string>
+    <string name="cursor_key">Кнопка курсора</string>
+    <string name="cursor_key_press">Нажмите кнопку пульта, которая будет показывать и прятать курсор.</string>
+    <string name="cursor_speed">Скорость</string>
+    <string name="cursor_speed_restart">Применится при следующем запуске курсора</string>
+    <string name="speed_slow">Медленно</string>
+    <string name="speed_normal">Обычно</string>
+    <string name="speed_fast">Быстро</string>
+    <string name="cursor_service_label">Курсор TV Home</string>
+    <string name="cursor_service_description">Показывает указатель, которым управляет пульт, в любом приложении и нажимает туда, куда он указывает. Читает только кнопки пульта, содержимое экрана не читает.</string>
+    <string name="cursor_enable_manually">Включите «Курсор TV Home» в настройках специальных возможностей</string>
+
     <string name="home_screen">Домашний экран</string>
     <string name="home_this">Этот лаунчер</string>
     <string name="home_stock">Google TV</string>

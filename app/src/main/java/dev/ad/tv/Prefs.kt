@@ -46,6 +46,18 @@ class Prefs(context: Context) {
         get() = sp.getString("tile_size", TileSize.LARGE.name)!!
         set(v) = sp.edit().putString("tile_size", v).apply()
 
+    // Remote cursor
+    var cursorMode: String
+        get() = sp.getString("cursor_mode", CursorMode.LAUNCHER.name)!!
+        set(v) = sp.edit().putString("cursor_mode", v).apply()
+    /** Remote key that shows/hides the cursor; the Streamer remote's star button by default. */
+    var cursorKey: Int
+        get() = sp.getInt("cursor_key", android.view.KeyEvent.KEYCODE_BOOKMARK)
+        set(v) = sp.edit().putInt("cursor_key", v).apply()
+    var cursorSpeed: Float
+        get() = sp.getFloat("cursor_speed", 1f)
+        set(v) = sp.edit().putFloat("cursor_speed", v).apply()
+
     var lastLaunchedPackage: String?
         get() = sp.getString("last_pkg", null)
         set(v) = sp.edit().putString("last_pkg", v).putLong("last_pkg_at", System.currentTimeMillis()).apply()
