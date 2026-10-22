@@ -47,6 +47,7 @@
     <string name="video_from_device_hint">Videos found in the device storage</string>
     <string name="video_from_url">Video from URL…</string>
     <string name="video_off">Turn video off</string>
+    <string name="video_failed">This video could not be played on this device</string>
     <string name="no_local_videos">No videos found. Copy one with: adb push video.mp4 /sdcard/Movies/</string>
     <string name="bg_midnight">Midnight</string>
     <string name="bg_ocean">Ocean</string>
@@ -67,6 +68,10 @@
     <string name="favorites">Favorites</string>
     <string name="favorites_hint">Tick apps for the bottom panel. Select an app under Order to move it.</string>
     <string name="order">Order</string>
+    <string name="tile_size">App tile size</string>
+    <string name="tile_compact">Compact</string>
+    <string name="tile_medium">Medium</string>
+    <string name="tile_large">Large</string>
     <string name="move_up">Move left</string>
     <string name="move_down">Move right</string>
     <plurals name="apps_count">

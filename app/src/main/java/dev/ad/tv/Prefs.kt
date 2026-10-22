@@ -17,6 +17,11 @@ class Prefs(context: Context) {
         get() = sp.getString("bg_video", null)
         set(v) = sp.edit().putString("bg_video", v).apply()
 
+    /** Why the selected video could not play, shown in background settings; null when it played. */
+    var videoError: String?
+        get() = sp.getString("bg_video_error", null)
+        set(v) = sp.edit().putString("bg_video_error", v).apply()
+
     var lastVideoUrl: String
         get() = sp.getString("bg_video_url", "") ?: ""
         set(v) = sp.edit().putString("bg_video_url", v).apply()
@@ -36,6 +41,10 @@ class Prefs(context: Context) {
     var favorites: List<String>
         get() = sp.getString("favorites", "")!!.split(',').filter { it.isNotBlank() }
         set(v) = sp.edit().putString("favorites", v.joinToString(",")).apply()
+
+    var tileSize: String
+        get() = sp.getString("tile_size", TileSize.LARGE.name)!!
+        set(v) = sp.edit().putString("tile_size", v).apply()
 
     var lastLaunchedPackage: String?
         get() = sp.getString("last_pkg", null)
@@ -88,6 +97,13 @@ class Prefs(context: Context) {
         fun get(context: Context): Prefs =
             instance ?: synchronized(this) { instance ?: Prefs(context.applicationContext).also { instance = it } }
     }
+}
+
+/** Favorites tile size in dp (16:9) and the panel padding around the row. */
+enum class TileSize(val width: Int, val height: Int, val panelPadding: Int) {
+    COMPACT(112, 63, 6),
+    MEDIUM(136, 77, 8),
+    LARGE(160, 90, 10),
 }
 
 enum class FeedSource { CUB, TMDB, KINOPOISK }

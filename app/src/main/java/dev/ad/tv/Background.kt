@@ -48,6 +48,14 @@ class VideoBackground(private val container: FrameLayout) {
     private var player: ExoPlayer? = null
     private var surface: SurfaceView? = null
     private var source: String? = null
+    private var videoSize: VideoSize? = null
+
+    init {
+        // The container may be laid out after the first video size arrives; recompute then too.
+        container.addOnLayoutChangeListener { _, l, t, r, b, ol, ot, or, ob ->
+            if (r - l != or - ol || b - t != ob - ot) videoSize?.let(::cover)
+        }
+    }
 
     fun start(uri: String?) {
         if (uri == null) {
@@ -62,7 +70,8 @@ class VideoBackground(private val container: FrameLayout) {
         stop()
         source = uri
         val view = SurfaceView(container.context)
-        container.addView(view, FrameLayout.LayoutParams(0, 0, Gravity.CENTER))
+        // Full size from the start: a 0x0 SurfaceView never gets a surface to decode into.
+        container.addView(view, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.CENTER))
         surface = view
         player = ExoPlayer.Builder(container.context).build().apply {
             volume = 0f
@@ -71,8 +80,13 @@ class VideoBackground(private val container: FrameLayout) {
             addListener(object : Player.Listener {
                 override fun onVideoSizeChanged(videoSize: VideoSize) = cover(videoSize)
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                    // A broken file or URL just leaves the colour preset visible.
+                    // A broken file or unsupported format leaves the colour preset visible; settings show why.
                     view.visibility = android.view.View.GONE
+                    Prefs.get(container.context).videoError = error.cause?.message ?: error.errorCodeName
+                }
+
+                override fun onRenderedFirstFrame() {
+                    Prefs.get(container.context).videoError = null
                 }
             })
             setMediaItem(MediaItem.fromUri(uri))
@@ -86,11 +100,13 @@ class VideoBackground(private val container: FrameLayout) {
         player = null
         surface?.let { container.removeView(it) }
         surface = null
+        videoSize = null
     }
 
     private fun cover(size: VideoSize) {
         val view = surface ?: return
         if (size.width == 0 || size.height == 0) return
+        videoSize = size
         val cw = container.width.toFloat().takeIf { it > 0 } ?: return
         val ch = container.height.toFloat()
         val videoRatio = size.width * size.pixelWidthHeightRatio / size.height

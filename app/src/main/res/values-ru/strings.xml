@@ -46,6 +46,7 @@
     <string name="video_from_device_hint">Видео из памяти устройства</string>
     <string name="video_from_url">Видео по ссылке…</string>
     <string name="video_off">Выключить видео</string>
+    <string name="video_failed">Это видео не воспроизводится на устройстве</string>
     <string name="no_local_videos">Видео не найдено. Скопируйте: adb push video.mp4 /sdcard/Movies/</string>
     <string name="bg_midnight">Полночь</string>
     <string name="bg_ocean">Океан</string>
@@ -66,6 +67,10 @@
     <string name="favorites">Избранное</string>
     <string name="favorites_hint">Отметьте приложения для нижней панели. Чтобы переставить, выберите приложение в разделе «Порядок».</string>
     <string name="order">Порядок</string>
+    <string name="tile_size">Размер плиток приложений</string>
+    <string name="tile_compact">Компактные</string>
+    <string name="tile_medium">Средние</string>
+    <string name="tile_large">Крупные</string>
     <string name="move_up">Сдвинуть левее</string>
     <string name="move_down">Сдвинуть правее</string>
     <plurals name="apps_count">
