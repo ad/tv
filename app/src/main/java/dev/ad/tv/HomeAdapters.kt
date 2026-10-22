@@ -4,12 +4,15 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Outline
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.view.animation.DecelerateInterpolator
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -61,6 +64,14 @@ class FavoritesAdapter(
     var packages: List<String> = emptyList()
         private set
 
+    var tileSize = TileSize.LARGE
+        set(v) {
+            if (field != v) {
+                field = v
+                notifyDataSetChanged()
+            }
+        }
+
     fun submit(context: Context, favorites: List<String>) {
         val next = favorites.filter { Apps.isInstalled(context, it) }
         packages = next
@@ -87,6 +98,13 @@ class FavoritesAdapter(
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val ctx = holder.itemView.context
         val pkg = packages.getOrNull(position)
+        holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
+            width = holder.itemView.dp(tileSize.width)
+            height = holder.itemView.dp(tileSize.height)
+        }
+        val compact = tileSize == TileSize.COMPACT
+        holder.icon.layoutParams = holder.icon.layoutParams.apply { width = holder.icon.dp(if (compact) 28 else 40); height = width }
+        holder.label.textSize = if (compact) 11f else 14f
         if (pkg == null) {
             holder.banner.visibility = View.GONE
             holder.fallback.visibility = View.VISIBLE
@@ -177,7 +195,7 @@ class FeedAdapter(
         val view = holder.itemView
         val item = items.getOrNull(position)
         view.layoutParams = view.layoutParams.apply { width = widths[position] ?: view.dp(if (position == selected) WIDE else NARROW) }
-        view.alpha = if (position == selected) 1f else DIMMED
+        view.dim(if (position == selected) 0f else 1f)
         bindImage(holder, item, position == selected)
         view.setOnClickListener {
             // A mouse/touch click on a card that is not selected selects it; the remote always clicks the selected one.
@@ -252,7 +270,7 @@ class FeedAdapter(
                 for (pos in intArrayOf(old, new)) {
                     list.findViewHolderForAdapterPosition(pos)?.itemView?.let { v ->
                         v.layoutParams = v.layoutParams.apply { width = widths[pos]!! }
-                        v.alpha = if (pos == new) DIMMED + (1 - DIMMED) * f else 1 - (1 - DIMMED) * f
+                        v.dim(if (pos == new) 1 - f else f)
                     }
                 }
                 lm.scrollToPositionWithOffset(new, (startOffset * (1 - f)).toInt())
@@ -269,6 +287,13 @@ class FeedAdapter(
     private companion object {
         const val WIDE = 300
         const val NARROW = 113
-        const val DIMMED = 0.7f
+        /** Darkening of non-selected cards: an overlay, not alpha, so a video background never shows through. */
+        const val DIM = 0.35f
+
+        fun View.dim(amount: Float) {
+            val clip = findViewById<FrameLayout>(R.id.cardClip)
+            val overlay = clip.foreground as? ColorDrawable ?: ColorDrawable(Color.BLACK).also { clip.foreground = it }
+            overlay.alpha = (amount * DIM * 255).toInt()
+        }
     }
 }

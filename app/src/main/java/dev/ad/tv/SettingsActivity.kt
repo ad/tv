@@ -143,6 +143,13 @@ class SettingsActivity : Activity() {
         row(getString(R.string.favorites), resources.getQuantityString(R.plurals.apps_count, prefs.favorites.size, prefs.favorites.size)) {
             open("favorites")
         }
+        val tile = runCatching { TileSize.valueOf(prefs.tileSize) }.getOrDefault(TileSize.LARGE)
+        row(getString(R.string.tile_size), tileName(tile)) {
+            choose(getString(R.string.tile_size), TileSize.entries, ::tileName, tile) {
+                prefs.tileSize = it.name
+                changed()
+            }
+        }
         row(getString(R.string.feed), on(prefs.feedEnabled)) { open("feed") }
         row(getString(R.string.home_screen), getString(if (HomeSwitch.isOurs(this)) R.string.home_this else R.string.home_stock)) {
             open("home")
@@ -170,9 +177,13 @@ class SettingsActivity : Activity() {
             }
         }
         section(getString(R.string.video))
+        prefs.videoError?.takeIf { prefs.backgroundVideo != null }?.let { error ->
+            row(getString(R.string.video_failed), error) {}
+        }
         for (uri in Backgrounds.bundledVideos(this)) {
             row(videoName(uri), getString(R.string.video_bundled), mark = if (prefs.backgroundVideo == uri) "✓" else null) {
                 prefs.backgroundVideo = uri
+                prefs.videoError = null
                 changed()
             }
         }
@@ -183,6 +194,7 @@ class SettingsActivity : Activity() {
                 if (text.isNotBlank()) {
                     prefs.lastVideoUrl = text
                     prefs.backgroundVideo = text
+                    prefs.videoError = null
                 }
                 changed()
             }
@@ -190,6 +202,7 @@ class SettingsActivity : Activity() {
         if (prefs.backgroundVideo != null) {
             row(getString(R.string.video_off)) {
                 prefs.backgroundVideo = null
+                prefs.videoError = null
                 changed()
             }
         }
@@ -438,6 +451,14 @@ class SettingsActivity : Activity() {
         },
     )
 
+    private fun tileName(t: TileSize) = getString(
+        when (t) {
+            TileSize.COMPACT -> R.string.tile_compact
+            TileSize.MEDIUM -> R.string.tile_medium
+            TileSize.LARGE -> R.string.tile_large
+        },
+    )
+
     private fun kindName(k: FeedKind) = getString(
         when (k) {
             FeedKind.BOTH -> R.string.kind_both
@@ -462,6 +483,7 @@ class SettingsActivity : Activity() {
             .setTitle(R.string.video_from_device)
             .setItems(videos.map { it.second }.toTypedArray()) { _, which ->
                 prefs.backgroundVideo = videos[which].first
+                prefs.videoError = null
                 changed()
             }
             .show()

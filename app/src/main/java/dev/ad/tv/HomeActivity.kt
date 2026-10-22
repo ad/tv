@@ -163,6 +163,7 @@ class HomeActivity : Activity() {
         if (appliedRevision == prefs.revision) return
         appliedRevision = prefs.revision
         root.background = Backgrounds.drawable(prefs.backgroundPreset)
+        applyTileSize()
         favAdapter.submit(this, prefs.favorites)
         btnInputs.visibility = if (Inputs.list(this).isEmpty()) View.GONE else View.VISIBLE
 
@@ -181,6 +182,16 @@ class HomeActivity : Activity() {
             maybeRefreshFeed(force = feedItems.isEmpty())
             if (feedItems.isNotEmpty()) showFeed(feedItems)
         }
+    }
+
+    /** The favorites row is sized to its tiles: tile + 7dp focus room above and below. */
+    private fun applyTileSize() {
+        val size = runCatching { TileSize.valueOf(prefs.tileSize) }.getOrDefault(TileSize.LARGE)
+        val d = resources.displayMetrics.density
+        favAdapter.tileSize = size
+        favList.layoutParams = favList.layoutParams.apply { height = ((size.height + 14) * d).toInt() }
+        val pad = (size.panelPadding * d).toInt()
+        findViewById<View>(R.id.favPanel).setPadding(pad, pad, pad, pad)
     }
 
     /** Large clock when the feed is off; compact header when the feed takes the middle. */
