@@ -188,13 +188,18 @@
             android:orientation="vertical"
             android:visibility="gone">
 
+            <!-- Full-bleed: cards scroll off the real screen edge instead of vanishing at the margin. -->
             <dev.ad.tv.EntryFocusRecyclerView
                 android:id="@+id/feedList"
                 android:layout_width="match_parent"
                 android:layout_height="186dp"
+                android:layout_marginStart="-48dp"
+                android:layout_marginEnd="-48dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
+                android:paddingStart="48dp"
                 android:paddingTop="8dp"
+                android:paddingEnd="48dp"
                 android:paddingBottom="8dp" />
 
             <TextView
