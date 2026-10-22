@@ -122,22 +122,21 @@
     <string name="speed_normal">Normal</string>
     <string name="speed_fast">Fast</string>
     <string name="cursor_service_label">TV Home cursor</string>
-    <string name="cursor_service_description">Shows a pointer controlled by the remote in any app and taps where it points. It reads only the remote buttons and does not read screen content.</string>
+    <string name="cursor_service_description">Shows a pointer controlled by the remote in any app and taps where it points. It reads the remote buttons, and the screen only while pairing with Wireless debugging: the code from the TV Settings pairing dialog.</string>
     <string name="cursor_enable_manually">Turn on “TV Home cursor” in Accessibility settings</string>
 
     <string name="home_screen">Home screen</string>
     <string name="home_this">This launcher</string>
     <string name="home_stock">Google TV</string>
     <string name="home_current">Current home screen</string>
-    <string name="home_hint">Switching uses Wireless debugging on this TV.\n1. Settings → System → About → press Build 7 times.\n2. Developer options → Wireless debugging → on.\n3. Pair device with pairing code, then enter the code here.\nAfter pairing, switching works both ways without a computer.</string>
+    <string name="home_hint">Switching uses Wireless debugging on this TV.\n1. Settings → System → About → press Build 7 times.\n2. Developer options → Wireless debugging → on.\n3. Press “Pair with this TV” here and confirm “Allow debugging?” with “Always allow” ticked. If the TV opens its settings instead, open “Pair device with pairing code”: the code is read on its own.\nAfter pairing, switching works both ways without a computer.</string>
     <string name="home_use_this">Make this launcher the home screen</string>
     <string name="home_use_stock">Restore Google TV home</string>
     <string name="usage_access">Usage access (focus the last app)</string>
     <string name="adb_pair">Pair with this TV</string>
     <string name="adb_paired">Paired</string>
     <string name="adb_pair_hint">Not paired yet</string>
-    <string name="adb_pair_code">Pairing code</string>
-    <string name="adb_pairing_not_found">Pairing service not found. Open “Pair device with pairing code” on the TV and keep it open.</string>
+    <string name="adb_pair_open_dialog">Open Wireless debugging → “Pair device with pairing code” and keep it open</string>
     <string name="adb_pairing_failed">Pairing failed. Check the code.</string>
     <string name="adb_connect_failed">Could not connect to Wireless debugging. Turn it on in Developer options.</string>
     <string name="wifi_owned">The Wi-Fi network was saved by %s and would be deleted. Forget the network in Settings and connect again, then retry.</string>

@@ -339,11 +339,7 @@ class SettingsActivity : Activity() {
         hint.text = getString(R.string.home_hint) + if (homeLog.isNotBlank()) "\n\n$homeLog" else ""
         row(getString(R.string.home_current), getString(if (ours) R.string.home_this else R.string.home_stock)) {}
         val paired = HomeSwitch.isPaired(this)
-        row(getString(R.string.adb_pair), getString(if (paired) R.string.adb_paired else R.string.adb_pair_hint)) {
-            askText(getString(R.string.adb_pair_code), "", "123456", numeric = true) { code ->
-                if (code.isNotBlank()) runAdb(getString(R.string.adb_pair)) { HomeSwitch.pair(this, code) }
-            }
-        }
+        row(getString(R.string.adb_pair), getString(if (paired) R.string.adb_paired else R.string.adb_pair_hint)) { startPairing() }
         if (ours) {
             row(getString(R.string.home_use_stock)) { runAdb(getString(R.string.home_use_stock)) { HomeSwitch.useStockLauncher(this, ::log) } }
         } else {
@@ -435,6 +431,21 @@ class SettingsActivity : Activity() {
         }
     }
 
+    /** Port 5555 needs only a tap on the TV's own prompt; otherwise the cursor service reads the pairing dialog. */
+    private fun startPairing() {
+        scope.launch {
+            if (withContext(Dispatchers.IO) { HomeSwitch.isLegacyPortOpen() }) {
+                runAdb(getString(R.string.adb_pair)) { HomeSwitch.authorize(this@SettingsActivity) }
+            } else {
+                if (!CursorService.isEnabled(this@SettingsActivity)) setCursorService(true)
+                if (!CursorService.isEnabled(this@SettingsActivity)) return@launch
+                CursorService.armPairing()
+                Toast.makeText(this@SettingsActivity, R.string.adb_pair_open_dialog, Toast.LENGTH_LONG).show()
+                Apps.start(this@SettingsActivity, android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+            }
+        }
+    }
+
     private fun runAdb(what: String, block: () -> Unit) {
         homeLog = getString(R.string.working)
         render(keepFocus = true)
@@ -481,12 +492,12 @@ class SettingsActivity : Activity() {
         }
     }
 
-    private fun askText(title: String, value: String, hintText: String, numeric: Boolean = false, onDone: (String) -> Unit) {
+    private fun askText(title: String, value: String, hintText: String, onDone: (String) -> Unit) {
         val edit = EditText(this).apply {
             setText(value)
             hint = hintText
             isSingleLine = true
-            inputType = if (numeric) InputType.TYPE_CLASS_NUMBER else InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
             setSelection(text.length)
         }
         val box = LinearLayout(this).apply {

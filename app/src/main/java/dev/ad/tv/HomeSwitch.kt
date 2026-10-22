@@ -19,11 +19,11 @@ import android.sun.security.x509.X500Name
 import android.sun.security.x509.X509CertImpl
 import android.sun.security.x509.X509CertInfo
 import io.github.muntashirakon.adb.AbsAdbConnectionManager
-import io.github.muntashirakon.adb.android.AdbMdns
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.io.File
 import java.io.IOException
-import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.Socket
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
@@ -32,7 +32,6 @@ import java.security.cert.CertificateFactory
 import java.security.spec.PKCS8EncodedKeySpec
 import java.util.Date
 import java.util.Random
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 /** ADB client talking to this TV's own adbd over Wireless debugging. Key and certificate live in filesDir. */
@@ -42,6 +41,8 @@ class AdbClient private constructor(context: Context) : AbsAdbConnectionManager(
 
     init {
         api = android.os.Build.VERSION.SDK_INT
+        // Long enough for the user to answer "Allow debugging?" on the TV.
+        setTimeout(120, TimeUnit.SECONDS)
         val keyFile = File(context.filesDir, "adb.key")
         val certFile = File(context.filesDir, "adb.crt")
         if (keyFile.exists() && certFile.exists()) {
@@ -99,6 +100,8 @@ object HomeSwitch {
     const val LAUNCHERX = "com.google.android.apps.tv.launcherx"
     const val SETUPWRAITH = "com.google.android.tungsten.setupwraith"
     private const val STOCK_HOME = "$LAUNCHERX/.home.HomeActivity"
+    private const val LOCAL = "127.0.0.1"
+    private const val LEGACY_PORT = 5555
 
     class WifiOwnedException(val owners: Set<String>) : Exception("Wi-Fi network saved by ${owners.joinToString()}")
 
@@ -109,13 +112,25 @@ object HomeSwitch {
 
     fun isPaired(context: Context) = File(context.filesDir, "adb.paired").exists()
 
-    /** Finds the "Pair device with pairing code" service and pairs with the 6-digit code. */
-    fun pair(context: Context, code: String) {
-        val (host, port) = discover(context, AdbMdns.SERVICE_TYPE_TLS_PAIRING, 15_000)
-            ?: throw IOException(context.getString(R.string.adb_pairing_not_found))
-        if (!AdbClient.get(context).pair(host, port, code.trim())) throw IOException(context.getString(R.string.adb_pairing_failed))
-        File(context.filesDir, "adb.paired").writeText(System.currentTimeMillis().toString())
+    /** adbd listens here only after `adb tcpip 5555`; it does not survive a reboot. */
+    fun isLegacyPortOpen() = runCatching { Socket().use { it.connect(InetSocketAddress(LOCAL, LEGACY_PORT), 500) } }.isSuccess
+
+    /**
+     * Over port 5555 the TV itself asks "Allow debugging?". adbd keeps accepted keys in one list,
+     * so the same key then also passes Wireless debugging after the port is gone.
+     */
+    fun authorize(context: Context) = withAdb(context, {}) {}
+
+    /**
+     * Pairs with the code and port read from the TV's pairing dialog by [CursorService]: Google TV
+     * stops the pairing service as soon as that dialog leaves the screen, so nobody can type the code here.
+     */
+    fun pair(context: Context, host: String, port: Int, code: String) {
+        if (!AdbClient.get(context).pair(host, port, code)) throw IOException(context.getString(R.string.adb_pairing_failed))
+        markPaired(context)
     }
+
+    private fun markPaired(context: Context) = File(context.filesDir, "adb.paired").writeText(System.currentTimeMillis().toString())
 
     fun useThisLauncher(context: Context, log: (String) -> Unit) = withAdb(context, log) { sh ->
         val pkg = context.packageName
@@ -163,10 +178,13 @@ object HomeSwitch {
         }
         try {
             log("connect")
-            val ok = runCatching { client.isConnected || client.connectTls(context, 15_000) }.getOrElse { e ->
+            val ok = runCatching {
+                client.isConnected || (isLegacyPortOpen() && client.connect(LOCAL, LEGACY_PORT)) || client.connectTls(context, 15_000)
+            }.getOrElse { e ->
                 throw IOException(context.getString(R.string.adb_connect_failed) + ": " + e.message, e)
             }
             if (!ok) throw IOException(context.getString(R.string.adb_connect_failed))
+            markPaired(context)
             block { cmd -> shell(client, cmd) }
         } finally {
             runCatching { client.disconnect() }
@@ -194,23 +212,5 @@ object HomeSwitch {
             runCatching { stream.close() }
         }
         return out.toString()
-    }
-
-    private fun discover(context: Context, type: String, timeoutMs: Long): Pair<String, Int>? {
-        val latch = CountDownLatch(1)
-        var found: Pair<String, Int>? = null
-        val mdns = AdbMdns(context, type) { host: InetAddress?, port: Int ->
-            if (host != null && port > 0) {
-                found = (host.hostAddress ?: "127.0.0.1") to port
-                latch.countDown()
-            }
-        }
-        mdns.start()
-        try {
-            latch.await(timeoutMs, TimeUnit.MILLISECONDS)
-        } finally {
-            mdns.stop()
-        }
-        return found
     }
 }
