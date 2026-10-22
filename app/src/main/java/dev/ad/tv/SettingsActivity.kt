@@ -119,6 +119,7 @@ class SettingsActivity : Activity() {
         }
         v.setOnClickListener { onClick() }
         if (onLongClick != null) v.setOnLongClickListener { onLongClick(); true }
+        v.mouseFriendly(onContextClick = onLongClick)
         rows.addView(v)
     }
 

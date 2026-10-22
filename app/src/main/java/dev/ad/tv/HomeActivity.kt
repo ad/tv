@@ -381,6 +381,7 @@ class HomeActivity : Activity() {
 
     private fun setupTopButton(button: ImageButton, action: () -> Unit) {
         button.setOnClickListener { action() }
+        button.mouseFriendly()
         button.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 topLabel.text = v.contentDescription
@@ -404,14 +405,9 @@ class HomeActivity : Activity() {
     }
 }
 
-/** Keeps the focused feed card at the left edge, so the wide "first" card is always the focused one. */
+/** Leaves scrolling to [FeedAdapter], which animates the focused card to the left edge itself. */
 class StartAlignedLayoutManager(context: Context) : LinearLayoutManager(context, RecyclerView.HORIZONTAL, false) {
     override fun requestChildRectangleOnScreen(
         parent: RecyclerView, child: View, rect: android.graphics.Rect, immediate: Boolean, focusedChildVisible: Boolean,
-    ): Boolean {
-        val dx = child.left - parent.paddingLeft
-        if (dx == 0) return false
-        if (immediate) parent.scrollBy(dx, 0) else parent.smoothScrollBy(dx, 0)
-        return true
-    }
+    ): Boolean = true
 }

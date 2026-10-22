@@ -97,6 +97,7 @@ class AppsActivity : Activity() {
             holder.itemView.contentDescription = app.label
             holder.itemView.setOnClickListener { if (Apps.launch(this@AppsActivity, app.pkg)) finish() }
             holder.itemView.setOnLongClickListener { showMenu(app); true }
+            holder.itemView.mouseFriendly(onContextClick = { showMenu(app) })
         }
     }
 }

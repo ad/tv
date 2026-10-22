@@ -39,6 +39,7 @@ class RescueActivity : Activity() {
                 }
             }
         }
+        listOf(R.id.retry, R.id.openStock, R.id.restore).forEach { findViewById<Button>(it).mouseFriendly() }
         findViewById<Button>(R.id.retry).requestFocus()
     }
 }
