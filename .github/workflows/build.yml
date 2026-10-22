@@ -24,14 +24,14 @@ jobs:
 
       - name: Build debug APKs (pull requests)
         if: github.event_name == 'pull_request'
-        run: ./gradlew --no-daemon assembleLiteDebug assembleVideoDebug
+        run: ./gradlew --no-daemon assembleDebug
 
       - name: Upload debug APKs
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: tv-home-debug-${{ github.run_number }}
-          path: app/build/outputs/apk/*/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
 
       # Releases must always be signed with the same key, or updates will not install over each other.
@@ -53,7 +53,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew --no-daemon assembleLiteRelease assembleVideoRelease
+        run: ./gradlew --no-daemon assembleRelease
 
       - name: Publish GitHub release
         if: github.event_name != 'pull_request'
@@ -62,8 +62,7 @@ jobs:
         run: |
           version="v1.0.${{ github.run_number }}"
           mkdir dist
-          cp app/build/outputs/apk/lite/release/app-lite-release.apk "dist/tv-home-lite-$version.apk"
-          cp app/build/outputs/apk/video/release/app-video-release.apk "dist/tv-home-video-$version.apk"
+          cp app/build/outputs/apk/release/app-release.apk "dist/tv-home-$version.apk"
           cp scripts/setup.sh dist/setup.sh
           gh release create "$version" dist/* \
             --target "${{ github.sha }}" \

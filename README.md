@@ -3,7 +3,7 @@
 Простой и быстрый лаунчер для Google TV (целевое устройство — Google TV Streamer 4K).
 
 - Большие часы и погода: сейчас, сегодня и три следующих дня (MET Norway). Город выбирается в настройках, поиск через OpenStreetMap.
-- Фон: 10 цветовых пресетов или видео без звука по кругу. Видео можно взять файлом с устройства, по ссылке (http/HLS) или встроенное (вариант `video`).
+- Фон: 10 цветовых пресетов или видео без звука по кругу. Видео можно взять файлом с устройства, по ссылке (http/HLS) или встроенное 1080p.
 - Справа сверху кнопки: видеовходы (HDMI с CEC-именами), все приложения, настройки лаунчера, настройки ТВ.
 - Внизу «стеклянная» панель избранного. При возврате на домашний экран фокус стоит на приложении, из которого вы вернулись. Размер плиток: компактные, средние или крупные.
 - Мышь:
@@ -17,18 +17,13 @@
 
 ## Установка
 
-В каждом [релизе](../../releases) два APK:
-
-| Файл | Что внутри |
-|---|---|
-| `tv-home-lite-*.apk` | Без встроенного видео (~2 МБ) |
-| `tv-home-video-*.apk` | Плюс два встроенных видео из папки `video/`: 4K60 и 1080p30 (~57 МБ) |
+В каждом [релизе](../../releases) один APK `tv-home-*.apk` со встроенным видео 1080p30 из папки `video/`.
 
 ```bash
 adb connect TV_IP:PORT
 ```
 ```bash
-adb install -r tv-home-lite-v1.0.N.apk
+adb install -r tv-home-v1.0.N.apk
 ```
 
 ### Сделать домашним экраном
@@ -47,7 +42,7 @@ adb install -r tv-home-lite-v1.0.N.apk
 **С компьютера** (запасной вариант):
 
 ```bash
-scripts/setup.sh TV_IP:PORT tv-home-lite-v1.0.N.apk
+scripts/setup.sh TV_IP:PORT tv-home-v1.0.N.apk
 ```
 ```bash
 scripts/setup.sh --revert TV_IP:PORT
@@ -70,7 +65,7 @@ adb shell input text 'ВАШ_КЛЮЧ'
 Нужны JDK 17+ и Android SDK (platform 36).
 
 ```bash
-./gradlew assembleLiteDebug
+./gradlew assembleDebug
 ```
 
 GitHub Actions (`.github/workflows/build.yml`):

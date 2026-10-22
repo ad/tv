@@ -40,13 +40,8 @@ android {
         }
     }
 
-    flavorDimensions += "content"
-    productFlavors {
-        create("lite") { dimension = "content" }
-        create("video") { dimension = "content" }
-    }
     sourceSets {
-        getByName("video").assets.srcDir("../video")
+        getByName("main").assets.srcDir("../video")
     }
 
     buildFeatures { buildConfig = true }
