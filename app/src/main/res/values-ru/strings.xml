@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Настройки TV Home</string>
+    <string name="tv_settings">Настройки ТВ</string>
+    <string name="all_apps">Все приложения</string>
+    <string name="inputs">Видеовходы</string>
+    <string name="no_inputs">Нет подключённых входов</string>
+    <string name="app_not_found">Приложение не найдено</string>
+    <string name="install_app">Установите %s</string>
+    <string name="kinopoisk">Кинопоиск</string>
+    <string name="on">Вкл</string>
+    <string name="off">Выкл</string>
+    <string name="done">Готово</string>
+    <string name="working">Выполняется…</string>
+    <string name="version">Версия %s</string>
+    <string name="default_value">По умолчанию</string>
+    <string name="not_set">Не задан</string>
+
+    <string name="feels_like">ощущается %1$s · %2$d м/с</string>
+    <string name="today_range">сегодня %1$s · %2$s</string>
+    <string name="no_precip">без осадков</string>
+    <string name="precip_mm">%s мм</string>
+    <string name="hours_ago">%d ч назад</string>
+
+    <string name="feed">Лента фильмов</string>
+    <string name="feed_failed">Не удалось загрузить ленту: %s</string>
+    <string name="feed_more_in_lampa">Открыть весь список в Lampa</string>
+    <string name="more">Ещё</string>
+    <string name="kind_movie">Фильм</string>
+    <string name="kind_tv">Сериал</string>
+    <string name="open_in">Открыть в %s</string>
+    <string name="hide">Скрыть</string>
+    <string name="hidden_toast">Скрыто. Вернуть можно в настройках.</string>
+
+    <string name="add_favorites">Добавить приложения</string>
+    <string name="add_favorite">В избранное</string>
+    <string name="remove_favorite">Убрать из избранного</string>
+    <string name="app_info">О приложении</string>
+
+    <string name="background">Фон</string>
+    <string name="background_hint">Цветовой пресет или видео без звука по кругу. Свои видео копируются через adb push в /sdcard/Movies.</string>
+    <string name="colors">Цвета</string>
+    <string name="video">Видео</string>
+    <string name="video_bundled">Встроенное</string>
+    <string name="video_from_device">Видео на устройстве…</string>
+    <string name="video_from_device_hint">Видео из памяти устройства</string>
+    <string name="video_from_url">Видео по ссылке…</string>
+    <string name="video_off">Выключить видео</string>
+    <string name="no_local_videos">Видео не найдено. Скопируйте: adb push video.mp4 /sdcard/Movies/</string>
+    <string name="bg_midnight">Полночь</string>
+    <string name="bg_ocean">Океан</string>
+    <string name="bg_aurora">Сияние</string>
+    <string name="bg_sunset">Закат</string>
+    <string name="bg_forest">Лес</string>
+    <string name="bg_graphite">Графит</string>
+    <string name="bg_black">Чёрный</string>
+    <string name="bg_navy">Тёмно-синий</string>
+    <string name="bg_plum">Слива</string>
+    <string name="bg_coffee">Кофе</string>
+
+    <string name="city">Город</string>
+    <string name="city_hint">Название города</string>
+    <string name="city_failed">Не удалось найти город: %s</string>
+    <string name="city_not_found">Ничего не найдено</string>
+
+    <string name="favorites">Избранное</string>
+    <string name="favorites_hint">Отметьте приложения для нижней панели. Чтобы переставить, выберите приложение в разделе «Порядок».</string>
+    <string name="order">Порядок</string>
+    <string name="move_up">Сдвинуть левее</string>
+    <string name="move_down">Сдвинуть правее</string>
+    <plurals name="apps_count">
+        <item quantity="one">%d приложение</item>
+        <item quantity="few">%d приложения</item>
+        <item quantity="many">%d приложений</item>
+        <item quantity="other">%d приложения</item>
+    </plurals>
+
+    <string name="feed_hint">CUB (Lampa) работает без ключа. Ключи TMDB и Кинопоиска удобно вводить командой: adb shell input text КЛЮЧ</string>
+    <string name="feed_source">Источник</string>
+    <string name="feed_mode">Подборка</string>
+    <string name="feed_kind">Тип</string>
+    <string name="open_in_setting">Открывать в</string>
+    <string name="hidden_items">Скрытые</string>
+    <string name="hidden_hint">Фильмы и сериалы, скрытые из ленты.</string>
+    <string name="nothing_hidden">Ничего не скрыто</string>
+    <string name="unhide_all">Вернуть все</string>
+    <string name="unhide">Нажмите, чтобы вернуть</string>
+    <string name="feed_refresh">Обновить сейчас</string>
+    <string name="feed_refresh_done">Лента обновится на главном экране</string>
+    <string name="keys">Ключи и хосты</string>
+    <string name="tmdb_key">Ключ TMDB API</string>
+    <string name="kp_key">Ключ Кинопоиска (poiskkino.dev)</string>
+    <string name="tmdb_api_host">Хост TMDB API</string>
+    <string name="tmdb_img_host">Хост картинок TMDB</string>
+    <string name="source_cub">CUB (Lampa)</string>
+    <string name="source_tmdb">TMDB (через прокси)</string>
+    <string name="source_kp">Кинопоиск</string>
+    <string name="mode_now">Сейчас смотрят</string>
+    <string name="mode_trending">В тренде</string>
+    <string name="mode_new">Новинки</string>
+    <string name="mode_new_4k">Новинки 4K</string>
+    <string name="mode_hot">Горячее</string>
+    <string name="mode_top">Топ‑100</string>
+    <string name="kind_both">Фильмы и сериалы</string>
+    <string name="kind_movies">Фильмы</string>
+    <string name="kind_series">Сериалы</string>
+
+    <string name="home_screen">Домашний экран</string>
+    <string name="home_this">Этот лаунчер</string>
+    <string name="home_stock">Google TV</string>
+    <string name="home_current">Сейчас домашний экран</string>
+    <string name="home_hint">Переключение идёт через «Отладку по Wi‑Fi» на этом ТВ.\n1. Настройки → Система → Об устройстве → 7 раз нажмите «Сборка ОС».\n2. Для разработчиков → Отладка по Wi‑Fi → вкл.\n3. «Подключить устройство с помощью кода» и введите код здесь.\nПосле сопряжения переключать можно в обе стороны без компьютера.</string>
+    <string name="home_use_this">Сделать этот лаунчер домашним</string>
+    <string name="home_use_stock">Вернуть Google TV</string>
+    <string name="usage_access">Доступ к истории (фокус на последнем приложении)</string>
+    <string name="adb_pair">Сопряжение с этим ТВ</string>
+    <string name="adb_paired">Выполнено</string>
+    <string name="adb_pair_hint">Ещё не выполнено</string>
+    <string name="adb_pair_code">Код сопряжения</string>
+    <string name="adb_pairing_not_found">Сервис сопряжения не найден. Откройте на ТВ «Подключить устройство с помощью кода» и не закрывайте окно.</string>
+    <string name="adb_pairing_failed">Сопряжение не удалось. Проверьте код.</string>
+    <string name="adb_connect_failed">Не удалось подключиться к отладке по Wi‑Fi. Включите её в разделе «Для разработчиков».</string>
+    <string name="wifi_owned">Сеть Wi‑Fi сохранена приложением %s и будет удалена. Забудьте сеть в настройках, подключитесь заново и повторите.</string>
+    <string name="stock_restored">Google TV снова домашний экран</string>
+
+    <string name="rescue_title">TV Home постоянно падает</string>
+    <string name="rescue_text">Лаунчер упал несколько раз подряд. Можно попробовать снова, открыть Google TV или вернуть его насовсем.</string>
+    <string name="rescue_retry">Попробовать снова</string>
+    <string name="rescue_open_stock">Открыть Google TV</string>
+</resources>

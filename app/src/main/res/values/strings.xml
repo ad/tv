@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TV Home</string>
+    <string name="settings_title">TV Home settings</string>
+    <string name="tv_settings">TV settings</string>
+    <string name="all_apps">All apps</string>
+    <string name="inputs">Inputs</string>
+    <string name="no_inputs">No connected inputs</string>
+    <string name="app_not_found">App not found</string>
+    <string name="install_app">Install %s first</string>
+    <string name="kinopoisk">Kinopoisk</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="done">Done</string>
+    <string name="working">Working…</string>
+    <string name="version">Version %s</string>
+    <string name="default_value">Default</string>
+    <string name="not_set">Not set</string>
+
+    <string name="feels_like">feels like %1$s · %2$d m/s</string>
+    <string name="today_range">today %1$s · %2$s</string>
+    <string name="no_precip">no precipitation</string>
+    <string name="precip_mm">%s mm</string>
+    <string name="hours_ago">%d h ago</string>
+
+    <string name="feed">Movie feed</string>
+    <string name="feed_failed">Could not load the feed: %s</string>
+    <string name="feed_more_in_lampa">Open the whole list in Lampa</string>
+    <string name="more">More</string>
+    <string name="kind_movie">Movie</string>
+    <string name="kind_tv">Series</string>
+    <string name="open_in">Open in %s</string>
+    <string name="hide">Hide</string>
+    <string name="hidden_toast">Hidden. You can bring it back in settings.</string>
+
+    <string name="add_favorites">Add apps</string>
+    <string name="add_favorite">Add to favorites</string>
+    <string name="remove_favorite">Remove from favorites</string>
+    <string name="app_info">App info</string>
+
+    <string name="background">Background</string>
+    <string name="background_hint">A colour preset or a muted looping video. Copy videos with adb push to /sdcard/Movies.</string>
+    <string name="colors">Colours</string>
+    <string name="video">Video</string>
+    <string name="video_bundled">Built in</string>
+    <string name="video_from_device">Video on this device…</string>
+    <string name="video_from_device_hint">Videos found in the device storage</string>
+    <string name="video_from_url">Video from URL…</string>
+    <string name="video_off">Turn video off</string>
+    <string name="no_local_videos">No videos found. Copy one with: adb push video.mp4 /sdcard/Movies/</string>
+    <string name="bg_midnight">Midnight</string>
+    <string name="bg_ocean">Ocean</string>
+    <string name="bg_aurora">Aurora</string>
+    <string name="bg_sunset">Sunset</string>
+    <string name="bg_forest">Forest</string>
+    <string name="bg_graphite">Graphite</string>
+    <string name="bg_black">Black</string>
+    <string name="bg_navy">Navy</string>
+    <string name="bg_plum">Plum</string>
+    <string name="bg_coffee">Coffee</string>
+
+    <string name="city">City</string>
+    <string name="city_hint">City name</string>
+    <string name="city_failed">City search failed: %s</string>
+    <string name="city_not_found">Nothing found</string>
+
+    <string name="favorites">Favorites</string>
+    <string name="favorites_hint">Tick apps for the bottom panel. Select an app under Order to move it.</string>
+    <string name="order">Order</string>
+    <string name="move_up">Move left</string>
+    <string name="move_down">Move right</string>
+    <plurals name="apps_count">
+        <item quantity="one">%d app</item>
+        <item quantity="other">%d apps</item>
+    </plurals>
+
+    <string name="feed_hint">CUB (Lampa) needs no key. TMDB and Kinopoisk keys can be typed with: adb shell input text KEY</string>
+    <string name="feed_source">Source</string>
+    <string name="feed_mode">List</string>
+    <string name="feed_kind">Type</string>
+    <string name="open_in_setting">Open in</string>
+    <string name="hidden_items">Hidden</string>
+    <string name="hidden_hint">Titles you hid from the feed.</string>
+    <string name="nothing_hidden">Nothing hidden</string>
+    <string name="unhide_all">Show all again</string>
+    <string name="unhide">Select to show again</string>
+    <string name="feed_refresh">Refresh now</string>
+    <string name="feed_refresh_done">The feed will reload on the home screen</string>
+    <string name="keys">Keys and hosts</string>
+    <string name="tmdb_key">TMDB API key</string>
+    <string name="kp_key">Kinopoisk (poiskkino.dev) key</string>
+    <string name="tmdb_api_host">TMDB API host</string>
+    <string name="tmdb_img_host">TMDB image host</string>
+    <string name="source_cub">CUB (Lampa)</string>
+    <string name="source_tmdb">TMDB (via proxy)</string>
+    <string name="source_kp">Kinopoisk</string>
+    <string name="mode_now">Watching now</string>
+    <string name="mode_trending">Trending</string>
+    <string name="mode_new">New releases</string>
+    <string name="mode_new_4k">New in 4K</string>
+    <string name="mode_hot">Hot</string>
+    <string name="mode_top">Top 100</string>
+    <string name="kind_both">Movies and series</string>
+    <string name="kind_movies">Movies</string>
+    <string name="kind_series">Series</string>
+
+    <string name="home_screen">Home screen</string>
+    <string name="home_this">This launcher</string>
+    <string name="home_stock">Google TV</string>
+    <string name="home_current">Current home screen</string>
+    <string name="home_hint">Switching uses Wireless debugging on this TV.\n1. Settings → System → About → press Build 7 times.\n2. Developer options → Wireless debugging → on.\n3. Pair device with pairing code, then enter the code here.\nAfter pairing, switching works both ways without a computer.</string>
+    <string name="home_use_this">Make this launcher the home screen</string>
+    <string name="home_use_stock">Restore Google TV home</string>
+    <string name="usage_access">Usage access (focus the last app)</string>
+    <string name="adb_pair">Pair with this TV</string>
+    <string name="adb_paired">Paired</string>
+    <string name="adb_pair_hint">Not paired yet</string>
+    <string name="adb_pair_code">Pairing code</string>
+    <string name="adb_pairing_not_found">Pairing service not found. Open “Pair device with pairing code” on the TV and keep it open.</string>
+    <string name="adb_pairing_failed">Pairing failed. Check the code.</string>
+    <string name="adb_connect_failed">Could not connect to Wireless debugging. Turn it on in Developer options.</string>
+    <string name="wifi_owned">The Wi-Fi network was saved by %s and would be deleted. Forget the network in Settings and connect again, then retry.</string>
+    <string name="stock_restored">Google TV home restored</string>
+
+    <string name="rescue_title">TV Home keeps crashing</string>
+    <string name="rescue_text">The launcher crashed several times in a row. You can try again, open the Google TV home, or restore it permanently.</string>
+    <string name="rescue_retry">Try again</string>
+    <string name="rescue_open_stock">Open Google TV home</string>
+</resources>
