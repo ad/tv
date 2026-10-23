@@ -219,7 +219,8 @@
             android:background="@drawable/glass"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:padding="10dp">
+            android:padding="10dp"
+            android:visibility="invisible">
 
             <dev.ad.tv.FavoritesRow
                 android:id="@+id/favList"
