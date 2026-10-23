@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -13,6 +14,9 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     private static final String EXTRA_URL = "url";
@@ -41,6 +45,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private SurfaceView video;
+    private SurfaceHolder holder;
     private Rtsp stream;
     private Thread thread;
 
@@ -61,6 +66,11 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     @Override public void surfaceCreated(SurfaceHolder holder) {
+        this.holder = holder;
+        play();
+    }
+
+    private void play() {
         Rtsp s = new Rtsp(getIntent().getStringExtra(EXTRA_URL));
         stream = s;
         thread = new Thread(() -> {
@@ -79,11 +89,30 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     @Override public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
 
     @Override public void surfaceDestroyed(SurfaceHolder holder) {
+        this.holder = null;
+        stop();
+    }
+
+    private void stop() {
         stream.close();
         try {
             thread.join(1000);
         } catch (InterruptedException ignored) {
         }
+    }
+
+    @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+        int step = keyCode == KeyEvent.KEYCODE_DPAD_LEFT ? -1 : keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ? 1 : 0;
+        if (step == 0) return super.onKeyDown(keyCode, event);
+        List<String> cameras = new ArrayList<>();
+        for (String f : Prefs.get(this).getFavorites()) if (isCamera(f)) cameras.add(url(f));
+        int i = cameras.indexOf(getIntent().getStringExtra(EXTRA_URL));
+        // A held key would reconnect on every repeat.
+        if (holder == null || cameras.size() < 2 || i < 0 || event.getRepeatCount() > 0) return true;
+        getIntent().putExtra(EXTRA_URL, cameras.get(Math.floorMod(i + step, cameras.size())));
+        stop();
+        play();
+        return true;
     }
 
     private void fit(int w, int h) {
