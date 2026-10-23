@@ -16,14 +16,16 @@
     <string name="default_value">По умолчанию</string>
     <string name="not_set">Не задан</string>
 
-    <string name="feels_like">ощущается %1$s · %2$d м/с</string>
-    <string name="today_range">сегодня %1$s · %2$s</string>
+    <string name="feels_like">Ощущается %1$s · %2$d м/с</string>
+    <string name="today_range">%1$s · %2$s</string>
     <string name="no_precip">без осадков</string>
     <string name="precip_mm">%s мм</string>
     <string name="hours_ago">%d ч назад</string>
 
     <string name="feed">Лента фильмов</string>
     <string name="feed_failed">Не удалось загрузить ленту: %s</string>
+    <string name="tmdb_key_missing">не задан ключ TMDB</string>
+    <string name="kp_key_missing">не задан ключ Кинопоиска</string>
     <string name="feed_more_in_lampa">Открыть весь список в Lampa</string>
     <string name="more">Ещё</string>
     <string name="kind_movie">Фильм</string>
@@ -142,7 +144,8 @@
     <string name="adb_pair_hint">Ещё не выполнено</string>
     <string name="adb_port_closed">Порт 5555 закрыт. Один раз выполните с компьютера adb tcpip 5555 (и снова после перезагрузки ТВ).</string>
     <string name="adb_not_accepted">На ТВ не подтвердили «Разрешить отладку?».</string>
-    <string name="wifi_owned">Сеть Wi‑Fi сохранена приложением %s и будет удалена. Забудьте сеть в настройках, подключитесь заново и повторите.</string>
+    <string name="wifi_owned">Сеть Wi‑Fi сохранена приложением %s и будет удалена. Забудьте сеть в настройках, подключитесь заново и повторите. Сетей вне зоны там нет: с компьютера выполните adb shell cmd wifi list-networks, затем adb shell cmd wifi forget-network ID.</string>
+    <string name="wifi_unknown">Не удалось проверить, какое приложение сохранило сеть Wi‑Fi, ничего не изменено. Повторите через минуту.</string>
     <string name="stock_restored">Android TV снова домашний экран</string>
 
     <string name="rescue_title">TV Home постоянно падает</string>

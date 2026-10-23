@@ -22,6 +22,7 @@ public class AppsActivity extends Activity {
 
     private LinearLayout grid;
     private ActivityCursor cursor;
+    private int renderedChanges = -1;
 
     @Override public boolean dispatchKeyEvent(KeyEvent event) {
         return cursor.onKey(event) || super.dispatchKeyEvent(event);
@@ -42,7 +43,10 @@ public class AppsActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         String focusedPkg = grid.findFocus() != null ? (String) grid.findFocus().getTag() : null;
-        render(Apps.installed(this));
+        if (renderedChanges != Apps.changes()) {
+            renderedChanges = Apps.changes();
+            render(Apps.installed(this));
+        }
         View target = focusedPkg != null ? grid.findViewWithTag(focusedPkg) : null;
         if (target == null) target = firstTile();
         if (target != null) target.requestFocus();

@@ -23,7 +23,7 @@
 adb connect TV_IP:PORT
 ```
 ```bash
-adb install -r tv-home-v1.0.N.apk
+adb install -r tv-home-v1.1.N.apk
 ```
 
 ### Сделать домашним экраном
@@ -41,7 +41,7 @@ adb install -r tv-home-v1.0.N.apk
 **С компьютера** (запасной вариант):
 
 ```bash
-scripts/setup.sh TV_IP:PORT tv-home-v1.0.N.apk
+scripts/setup.sh TV_IP:PORT tv-home-v1.1.N.apk
 ```
 ```bash
 scripts/setup.sh --revert TV_IP:PORT
@@ -72,7 +72,7 @@ adb shell input text 'ВАШ_КЛЮЧ'
 GitHub Actions (`.github/workflows/build.yml`):
 
 - **pull request** — APK в artifacts;
-- **push в `main`** — подписанные release-APK и `setup.sh` публикуются в GitHub Release `v1.0.<номер сборки>`. Если секретов с ключом нет, сборка падает: APK с разными подписями не обновляются поверх друг друга.
+- **push в `main`** — подписанные release-APK и `setup.sh` публикуются в GitHub Release `v1.1.<номер сборки>`. Если секретов с ключом нет, сборка падает: APK с разными подписями не обновляются поверх друг друга.
 
 ### Ключ подписи (один раз)
 

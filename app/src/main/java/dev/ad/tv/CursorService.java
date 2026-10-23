@@ -36,14 +36,21 @@ public final class CursorService extends AccessibilityService implements CursorH
                 PixelFormat.TRANSLUCENT);
         getSystemService(WindowManager.class).addView(v, lp);
         view = v;
-        controller = new CursorController(v, this, Prefs.get(this).getCursorSpeed());
+        controller = new CursorController(v, this, prefs().getCursorSpeed());
+    }
+
+    // MODE_MULTI_PROCESS makes the cached prefs re-read the file once Settings in the main process changes it.
+    @SuppressWarnings("deprecation")
+    private Prefs prefs() {
+        getSharedPreferences("prefs", MODE_MULTI_PROCESS);
+        return Prefs.get(this);
     }
 
     @Override
     public boolean onKeyEvent(KeyEvent event) {
         CursorController c = controller;
         if (c == null) return false;
-        Prefs prefs = Prefs.get(this);
+        Prefs prefs = prefs();
         if (!CursorMode.EVERYWHERE.name().equals(prefs.getCursorMode())) {
             if (c.isActive()) c.show(false);
             return false;

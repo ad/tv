@@ -18,13 +18,15 @@
     <string name="not_set">Not set</string>
 
     <string name="feels_like">feels like %1$s · %2$d m/s</string>
-    <string name="today_range">today %1$s · %2$s</string>
+    <string name="today_range">%1$s · %2$s</string>
     <string name="no_precip">no precipitation</string>
     <string name="precip_mm">%s mm</string>
     <string name="hours_ago">%d h ago</string>
 
     <string name="feed">Movie feed</string>
     <string name="feed_failed">Could not load the feed: %s</string>
+    <string name="tmdb_key_missing">TMDB key is not set</string>
+    <string name="kp_key_missing">Kinopoisk key is not set</string>
     <string name="feed_more_in_lampa">Open the whole list in Lampa</string>
     <string name="more">More</string>
     <string name="kind_movie">Movie</string>
@@ -141,7 +143,8 @@
     <string name="adb_pair_hint">Not paired yet</string>
     <string name="adb_port_closed">Port 5555 is closed. Run adb tcpip 5555 from a computer once (again after a TV restart).</string>
     <string name="adb_not_accepted">“Allow debugging?” was not accepted on the TV.</string>
-    <string name="wifi_owned">The Wi-Fi network was saved by %s and would be deleted. Forget the network in Settings and connect again, then retry.</string>
+    <string name="wifi_owned">The Wi-Fi network was saved by %s and would be deleted. Forget it in Settings and connect again, then retry. Networks out of range are not listed there: from a computer run adb shell cmd wifi list-networks, then adb shell cmd wifi forget-network ID.</string>
+    <string name="wifi_unknown">Could not check which app saved the Wi-Fi network, so nothing changed. Try again in a minute.</string>
     <string name="stock_restored">Android TV home restored</string>
 
     <string name="rescue_title">TV Home keeps crashing</string>

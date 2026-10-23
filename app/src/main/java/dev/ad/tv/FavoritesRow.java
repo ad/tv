@@ -32,6 +32,9 @@ public class FavoritesRow extends HorizontalScrollView {
         strip.setClipChildren(false);
         strip.setClipToPadding(false);
         addView(strip, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        // The scroll view clips the strip to the strip's bounds, so the focus room must be inside the strip.
+        strip.setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight(), getPaddingBottom());
+        setPadding(0, 0, 0, 0);
     }
 
     void setCallbacks(Consumer<String> onClick, Consumer<String> onLongClick) {
@@ -116,14 +119,14 @@ public class FavoritesRow extends HorizontalScrollView {
         Views.mouseFriendly(tile, true, () -> onLongClick.accept(pkg));
     }
 
-    // HorizontalScrollView ignores padding here; RecyclerView kept the focused tile inside it.
-    // Plus the 7dp tile margin from item_favorite.xml, so the 1.1x focus scale is not clipped at the edge.
+    // Scroll far enough to show the strip's padding and the 7dp tile margin from item_favorite.xml,
+    // so the 1.1x focus scale is not clipped at the edge.
     @Override
     protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
         Rect r = new Rect(rect);
         int margin = Views.dp(this, 7);
-        r.left -= getPaddingLeft() + margin;
-        r.right += getPaddingRight() + margin;
+        r.left -= strip.getPaddingLeft() + margin;
+        r.right += strip.getPaddingRight() + margin;
         return super.computeScrollDeltaToGetChildRectOnScreen(r);
     }
 }

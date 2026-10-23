@@ -66,7 +66,7 @@ final class Images {
         pool.execute(() -> {
             try {
                 File f = file(context, url);
-                if (!f.exists()) Files.write(f.toPath(), Http.getBytes(url));
+                if (!f.exists()) download(url, f);
             } catch (Exception ignored) {
             }
         });
@@ -75,16 +75,31 @@ final class Images {
     private static Bitmap fetch(Context context, String url) throws IOException {
         File f = file(context, url);
         if (!f.exists()) {
-            File tmp = new File(f.getPath() + ".tmp");
-            Files.write(tmp.toPath(), Http.getBytes(url));
-            tmp.renameTo(f);
+            download(url, f);
             trim(context);
         } else {
             f.setLastModified(System.currentTimeMillis());
         }
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inPreferredConfig = Bitmap.Config.RGB_565;
-        return BitmapFactory.decodeFile(f.getPath(), opts);
+        Bitmap bmp = BitmapFactory.decodeFile(f.getPath(), opts);
+        if (bmp == null) f.delete();
+        return bmp;
+    }
+
+    private static void download(String url, File f) throws IOException {
+        File tmp = new File(f.getPath() + "." + Thread.currentThread().getId() + ".tmp");
+        try {
+            Files.write(tmp.toPath(), Http.getBytes(url));
+            if (!tmp.renameTo(f)) tmp.delete();
+        } catch (IOException e) {
+            tmp.delete();
+            throw e;
+        }
+    }
+
+    static void trimMemory() {
+        memory.evictAll();
     }
 
     private static File dir(Context context) {

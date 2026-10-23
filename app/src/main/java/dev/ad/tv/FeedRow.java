@@ -159,6 +159,7 @@ public class FeedRow extends HorizontalScrollView {
     private void bindImage(View card, FeedItem item, boolean wide) {
         ImageView image = card.findViewById(R.id.image);
         TextView title = card.findViewById(R.id.title);
+        card.setContentDescription(item == null ? card.getContext().getString(R.string.more) : item.title);
         if (item == null) {
             image.setScaleType(ImageView.ScaleType.CENTER);
             image.setImageResource(R.drawable.ic_more);

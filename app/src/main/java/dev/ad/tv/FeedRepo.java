@@ -1,6 +1,7 @@
 package dev.ad.tv;
 
 import android.content.Context;
+import android.icu.util.ULocale;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +41,7 @@ final class FeedRepo {
         }
 
         String id() {
-            return source.name() + "/" + mode.name() + "/" + kind.name();
+            return source.name() + "/" + mode.name() + "/" + kind.name() + "/" + Locale.getDefault().toLanguageTag();
         }
 
         static Config from(Prefs p) {
@@ -73,6 +75,10 @@ final class FeedRepo {
         List<FeedItem> load(String cat) throws Exception;
     }
 
+    private interface Retitle {
+        String title(boolean isTv, long id) throws Exception;
+    }
+
     private static File cacheFile(Context context) {
         return new File(context.getCacheDir(), "feed.json");
     }
@@ -94,8 +100,8 @@ final class FeedRepo {
         Prefs prefs = Prefs.get(context);
         List<FeedItem> all = switch (config.source) {
             case CUB -> cub(prefs, config);
-            case TMDB -> tmdb(prefs, config);
-            case KINOPOISK -> kinopoisk(prefs, config);
+            case TMDB -> tmdb(context, prefs, config);
+            case KINOPOISK -> kinopoisk(context, prefs, config);
         };
         Set<String> keys = new HashSet<>();
         List<FeedItem> items = new ArrayList<>();
@@ -153,18 +159,34 @@ final class FeedRepo {
         String img = imageHost(prefs);
         return byKind(config.kind, cat -> {
             JSONArray arr = new JSONObject(Http.getFirst(bases, cubPath(config.mode, cat))).getJSONArray("results");
-            return parseTmdbList(arr, "cub", img, null);
+            return parseTmdbList(arr, "cub", img, null, null);
         });
     }
 
-    private static List<FeedItem> tmdb(Prefs prefs, Config config) throws Exception {
+    private static List<FeedItem> tmdb(Context context, Prefs prefs, Config config) throws Exception {
         String key = prefs.getTmdbKey();
-        if (key.trim().isEmpty()) throw new IllegalStateException("TMDB key is not set");
+        if (key.trim().isEmpty()) throw new IllegalStateException(context.getString(R.string.tmdb_key_missing));
         List<String> bases = new ArrayList<>();
         if (!prefs.getTmdbApiHost().trim().isEmpty()) bases.add(prefs.getTmdbApiHost().replaceAll("/+$", ""));
         bases.addAll(TMDB_API);
         String img = imageHost(prefs);
-        String q = "api_key=" + Http.enc(key) + "&language=ru-RU&region=RU";
+        // The app's own language setting is just "ru" or "en"; TMDB wants a region too.
+        ULocale locale = ULocale.addLikelySubtags(ULocale.forLocale(Locale.getDefault()));
+        String q = "api_key=" + Http.enc(key) + "&language=" + locale.getLanguage() + "-" + locale.getCountry()
+            + "&region=" + locale.getCountry();
+        // TMDB returns the original title when it has no translation; English beats an unreadable script.
+        boolean[] englishFailed = {false};
+        Retitle english = (isTv, id) -> {
+            // Each failed lookup waits on every mirror's timeout; one failure is enough for this fetch.
+            if (englishFailed[0]) return null;
+            try {
+                return FeedItem.optStringOrNull(new JSONObject(Http.getFirst(bases,
+                    "/" + (isTv ? "tv/" : "movie/") + id + "?api_key=" + Http.enc(key) + "&language=en-US")), isTv ? "name" : "title");
+            } catch (Exception e) {
+                englishFailed[0] = true;
+                throw e;
+            }
+        };
         String fresh = LocalDate.now().minusDays(120).toString();
         String today = LocalDate.now().toString();
         return byKind(config.kind, cat -> {
@@ -179,7 +201,7 @@ final class FeedRepo {
                 path = "/trending/" + cat + "/week?" + q;
             }
             JSONArray arr = new JSONObject(Http.getFirst(bases, path)).getJSONArray("results");
-            return parseTmdbList(arr, "tmdb", img, cat.equals("tv"));
+            return parseTmdbList(arr, "tmdb", img, cat.equals("tv"), english);
         });
     }
 
@@ -188,7 +210,7 @@ final class FeedRepo {
         return (host.trim().isEmpty() ? TMDB_IMG : host).replaceAll("/+$", "");
     }
 
-    private static List<FeedItem> parseTmdbList(JSONArray arr, String source, String img, Boolean forceTv) throws Exception {
+    private static List<FeedItem> parseTmdbList(JSONArray arr, String source, String img, Boolean forceTv, Retitle english) throws Exception {
         List<FeedItem> out = new ArrayList<>();
         for (int i = 0; i < arr.length(); i++) {
             JSONObject o = arr.getJSONObject(i);
@@ -199,10 +221,20 @@ final class FeedRepo {
             if (title == null) title = FeedItem.optStringOrNull(o, "title");
             if (title == null) title = FeedItem.optStringOrNull(o, "name");
             if (title == null) continue;
+            long id = o.getLong("id");
+            String original = FeedItem.optStringOrNull(o, isTv ? "original_name" : "original_title");
+            String lang = o.optString("original_language");
+            if (english != null && title.equals(original) && !lang.equals("en")
+                    && !lang.equals(Locale.getDefault().getLanguage())) {
+                try {
+                    String en = english.title(isTv, id);
+                    if (en != null && !en.isEmpty()) title = en;
+                } catch (Exception ignored) {
+                }
+            }
             String date = FeedItem.optStringOrNull(o, "release_date");
             if (date == null) date = FeedItem.optStringOrNull(o, "first_air_date");
             if (date == null) date = "";
-            long id = o.getLong("id");
             String backdrop = FeedItem.optStringOrNull(o, "backdrop_path");
             String poster = FeedItem.optStringOrNull(o, "poster_path");
             out.add(new FeedItem(
@@ -219,9 +251,9 @@ final class FeedRepo {
         return out;
     }
 
-    private static List<FeedItem> kinopoisk(Prefs prefs, Config config) throws Exception {
+    private static List<FeedItem> kinopoisk(Context context, Prefs prefs, Config config) throws Exception {
         String key = prefs.getKpKey();
-        if (key.trim().isEmpty()) throw new IllegalStateException("Kinopoisk key is not set");
+        if (key.trim().isEmpty()) throw new IllegalStateException(context.getString(R.string.kp_key_missing));
         int year = LocalDate.now().getYear();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         String filter = config.mode == FeedMode.NEW
