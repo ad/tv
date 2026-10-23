@@ -32,7 +32,6 @@
     <string name="hide">Скрыть</string>
     <string name="hidden_toast">Скрыто. Вернуть можно в настройках.</string>
 
-    <string name="add_favorites">Добавить приложения</string>
     <string name="add_favorite">В избранное</string>
     <string name="remove_favorite">Убрать из избранного</string>
     <string name="app_info">О приложении</string>
@@ -150,4 +149,6 @@
     <string name="rescue_text">Лаунчер упал несколько раз подряд. Можно попробовать снова, открыть Android TV или вернуть его насовсем.</string>
     <string name="rescue_retry">Попробовать снова</string>
     <string name="rescue_open_stock">Открыть Android TV</string>
+    <string name="language">Язык</string>
+    <string name="language_system">Как в системе</string>
 </resources>

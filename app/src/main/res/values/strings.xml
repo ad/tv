@@ -33,7 +33,6 @@
     <string name="hide">Hide</string>
     <string name="hidden_toast">Hidden. You can bring it back in settings.</string>
 
-    <string name="add_favorites">Add apps</string>
     <string name="add_favorite">Add to favorites</string>
     <string name="remove_favorite">Remove from favorites</string>
     <string name="app_info">App info</string>
@@ -149,4 +148,6 @@
     <string name="rescue_text">The launcher crashed several times in a row. You can try again, open the Android TV home, or restore it permanently.</string>
     <string name="rescue_retry">Try again</string>
     <string name="rescue_open_stock">Open Android TV home</string>
+    <string name="language">Language</string>
+    <string name="language_system">System</string>
 </resources>
