@@ -153,4 +153,8 @@
     <string name="rescue_open_stock">Open Android TV home</string>
     <string name="language">Language</string>
     <string name="language_system">System</string>
+    <string name="camera_error">Cannot play the camera stream</string>
+    <string name="add_camera">Add camera</string>
+    <string name="camera_url_hint">rtsp://user:password@address:554/path</string>
+    <string name="camera_url_invalid">The address must start with rtsp://</string>
 </resources>

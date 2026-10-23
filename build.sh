@@ -10,7 +10,7 @@ AJ="$SDK/platforms/android-36/android.jar"
 JBIN="${JAVA_HOME:+$JAVA_HOME/bin/}"
 
 VERSION_CODE="${VERSION_CODE:-1}"
-VERSION_NAME="${VERSION_NAME:-1.1.$VERSION_CODE}"
+VERSION_NAME="${VERSION_NAME:-1.2.$VERSION_CODE}"
 SRC=app/src/main
 
 rm -rf out && mkdir -p out/gen/dev/ad/tv out/classes

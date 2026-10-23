@@ -43,7 +43,7 @@ jobs:
       - name: Build APK
         env:
           VERSION_CODE: ${{ github.run_number }}
-          VERSION_NAME: 1.1.${{ github.run_number }}
+          VERSION_NAME: 1.2.${{ github.run_number }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -62,7 +62,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="v1.1.${{ github.run_number }}"
+          version="v1.2.${{ github.run_number }}"
           mkdir dist
           cp tv-home.apk "dist/tv-home-$version.apk"
           cp scripts/setup.sh dist/setup.sh

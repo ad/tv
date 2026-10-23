@@ -154,4 +154,8 @@
     <string name="rescue_open_stock">Открыть Android TV</string>
     <string name="language">Язык</string>
     <string name="language_system">Как в системе</string>
+    <string name="camera_error">Не удалось открыть поток камеры</string>
+    <string name="add_camera">Добавить камеру</string>
+    <string name="camera_url_hint">rtsp://логин:пароль@адрес:554/путь</string>
+    <string name="camera_url_invalid">Адрес должен начинаться с rtsp://</string>
 </resources>

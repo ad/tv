@@ -277,6 +277,18 @@ public class SettingsActivity extends Activity {
             String pkg = favorites.get(i);
             row((i + 1) + ". " + Apps.label(this, pkg), null, null, Apps.icon(this, pkg), null, () -> reorder(pkg));
         }
+        row(getString(R.string.add_camera), null, null, getDrawable(R.drawable.ic_camera), null, () ->
+            askText(getString(R.string.add_camera), "", getString(R.string.camera_url_hint), url -> {
+                if (url.isEmpty()) return;
+                if (!url.regionMatches(true, 0, "rtsp://", 0, 7)) {
+                    Toast.makeText(this, R.string.camera_url_invalid, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                List<String> next = new ArrayList<>(prefs.getFavorites());
+                next.add(CameraActivity.favorite(url));
+                prefs.setFavorites(next);
+                changed();
+            }));
         section(getString(R.string.all_apps));
         for (AppEntry app : Apps.installed(this)) {
             boolean isOn = favorites.contains(app.pkg);
