@@ -44,7 +44,7 @@ final class Images {
             view.setImageBitmap(cached);
             return;
         }
-        view.setImageDrawable(null);
+        // The old picture stays until the new one is decoded, so a card never flashes empty.
         Context context = view.getContext().getApplicationContext();
         pool.execute(() -> {
             Bitmap bmp;
@@ -53,7 +53,12 @@ final class Images {
             } catch (Exception e) {
                 bmp = null;
             }
-            if (bmp == null) return;
+            if (bmp == null) {
+                main.post(() -> {
+                    if (url.equals(view.getTag())) view.setImageDrawable(null);
+                });
+                return;
+            }
             memory.put(url, bmp);
             Bitmap b = bmp;
             main.post(() -> {

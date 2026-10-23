@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Outline;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.format.DateFormat;
@@ -13,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -93,6 +95,14 @@ public class HomeActivity extends Activity {
         weatherBox = findViewById(R.id.weatherBox);
         favPanel = findViewById(R.id.favPanel);
         favList = findViewById(R.id.favList);
+        // Scrolled tiles are cut just inside the 1dp rim of glass.xml, along its 26dp corners.
+        float rim = getResources().getDisplayMetrics().density;
+        favPanel.setOutlineProvider(new ViewOutlineProvider() {
+            @Override public void getOutline(View view, Outline outline) {
+                outline.setRoundRect(Math.round(rim), Math.round(rim), view.getWidth() - Math.round(rim), view.getHeight() - Math.round(rim), 25 * rim);
+            }
+        });
+        favPanel.setClipToOutline(true);
         feedBox = findViewById(R.id.feedBox);
         feedList = findViewById(R.id.feedList);
         feedCaption = findViewById(R.id.feedCaption);

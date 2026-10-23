@@ -164,11 +164,15 @@ public class FeedRow extends HorizontalScrollView {
             image.setScaleType(ImageView.ScaleType.CENTER);
             image.setImageResource(R.drawable.ic_more);
             image.setTag(null);
+            card.setTag(null);
             title.setText(R.string.more);
             title.setVisibility(View.VISIBLE);
             return;
         }
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        // Images.load keeps the old picture while loading: right for poster-to-backdrop, wrong for another title.
+        if (!item.key.equals(card.getTag())) image.setImageDrawable(null);
+        card.setTag(item.key);
         String url = wide ? (item.backdrop != null ? item.backdrop : item.poster)
                 : (item.poster != null ? item.poster : item.backdrop);
         Images.load(image, url);
@@ -198,28 +202,33 @@ public class FeedRow extends HorizontalScrollView {
         return x + ((ViewGroup.MarginLayoutParams) strip.getChildAt(position).getLayoutParams()).getMarginStart();
     }
 
+    // A new step starts from the cards' current widths, so quick presses do not snap the previous step to its end.
     private void animateSelection(int old, int next) {
         if (old == next) return;
-        if (animator != null) animator.end();
+        if (animator != null) animator.cancel();
         selected = next;
         int wide = Views.dp(this, WIDE);
         int narrow = Views.dp(this, NARROW);
-        View oldCard = strip.getChildAt(old);
-        View newCard = strip.getChildAt(next);
+        int n = strip.getChildCount();
+        int[] from = new int[n];
+        for (int i = 0; i < n; i++) from[i] = strip.getChildAt(i).getLayoutParams().width;
         int startOffset = leftOf(next) - getScrollX();
-        bindImage(oldCard, item(old), false);
-        bindImage(newCard, item(next), true);
+        bindImage(strip.getChildAt(old), item(old), false);
+        bindImage(strip.getChildAt(next), item(next), true);
         animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(220);
         animator.setInterpolator(new DecelerateInterpolator());
         animator.addUpdateListener(a -> {
             float f = (float) a.getAnimatedValue();
-            oldCard.getLayoutParams().width = (int) (wide + (narrow - wide) * f);
-            newCard.getLayoutParams().width = (int) (narrow + (wide - narrow) * f);
-            oldCard.requestLayout();
-            newCard.requestLayout();
-            dim(oldCard, f);
-            dim(newCard, 1 - f);
+            for (int i = 0; i < n; i++) {
+                int to = i == next ? wide : narrow;
+                if (from[i] == to) continue;
+                View card = strip.getChildAt(i);
+                int width = (int) (from[i] + (to - from[i]) * f);
+                card.getLayoutParams().width = width;
+                card.requestLayout();
+                dim(card, (float) (wide - width) / (wide - narrow));
+            }
             scrollTo(leftOf(next) - (int) (startOffset * (1 - f)), 0);
         });
         animator.start();
