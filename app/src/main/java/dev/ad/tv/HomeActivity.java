@@ -460,11 +460,15 @@ public class HomeActivity extends Activity {
     }
 
     private void onFavoriteClick(String pkg) {
-        Apps.launch(this, pkg);
+        // Apps.launch adds RESET_TASK_IF_NEEDED, which with clearTaskOnLaunch would close our own activity at once.
+        if (CameraActivity.isCamera(pkg)) startActivity(CameraActivity.intent(this, pkg));
+        else Apps.launch(this, pkg);
     }
 
     private void onFavoriteLongClick(String pkg) {
-        String[] items = {getString(R.string.remove_favorite), getString(R.string.app_info)};
+        String[] items = CameraActivity.isCamera(pkg)
+                ? new String[] {getString(R.string.remove_favorite)}
+                : new String[] {getString(R.string.remove_favorite), getString(R.string.app_info)};
         new AlertDialog.Builder(this)
                 .setTitle(Apps.label(this, pkg))
                 .setItems(items, (dialog, which) -> {

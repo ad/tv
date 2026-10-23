@@ -81,6 +81,7 @@ final class Apps {
     }
 
     static String label(Context context, String pkg) {
+        if (CameraActivity.isCamera(pkg)) return CameraActivity.label(pkg);
         try {
             PackageManager pm = context.getPackageManager();
             return pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString();
@@ -101,6 +102,7 @@ final class Apps {
     }
 
     static Drawable icon(Context context, String pkg) {
+        if (CameraActivity.isCamera(pkg)) return context.getDrawable(R.drawable.ic_camera);
         try {
             return context.getPackageManager().getApplicationIcon(pkg);
         } catch (PackageManager.NameNotFoundException e) {

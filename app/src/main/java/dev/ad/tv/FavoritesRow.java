@@ -1,7 +1,9 @@
 package dev.ad.tv;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -15,7 +17,11 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class FavoritesRow extends HorizontalScrollView {
@@ -24,6 +30,9 @@ public class FavoritesRow extends HorizontalScrollView {
     private Consumer<String> onLongClick;
     private List<String> packages = Collections.emptyList();
     private TileSize tileSize = TileSize.LARGE;
+    private final Map<String, Bitmap> snapshots = new HashMap<>();
+    private final Set<String> loading = new HashSet<>();
+    private final Runnable refresh = this::refreshCameras;
 
     public FavoritesRow(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,9 +64,11 @@ public class FavoritesRow extends HorizontalScrollView {
 
     void submit(List<String> favorites) {
         List<String> next = new ArrayList<>();
-        for (String pkg : favorites) if (Apps.isInstalled(getContext(), pkg)) next.add(pkg);
+        for (String pkg : favorites) if (CameraActivity.isCamera(pkg) || Apps.isInstalled(getContext(), pkg)) next.add(pkg);
         packages = next;
         bindAll();
+        removeCallbacks(refresh);
+        post(refresh);
     }
 
     void focusTile(int index) {
@@ -99,7 +110,8 @@ public class FavoritesRow extends HorizontalScrollView {
         icon.getLayoutParams().height = icon.getLayoutParams().width;
         icon.requestLayout();
         label.setTextSize(compact ? 11f : 14f);
-        Drawable b = Apps.banner(ctx, pkg);
+        Bitmap snapshot = snapshots.get(pkg);
+        Drawable b = snapshot != null ? new BitmapDrawable(getResources(), snapshot) : Apps.banner(ctx, pkg);
         if (b != null) {
             banner.setVisibility(View.VISIBLE);
             fallback.setVisibility(View.GONE);
@@ -117,6 +129,46 @@ public class FavoritesRow extends HorizontalScrollView {
             return true;
         });
         Views.mouseFriendly(tile, true, () -> onLongClick.accept(pkg));
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        removeCallbacks(refresh);
+        if (visibility == VISIBLE) post(refresh);
+    }
+
+    // The screensaver hides the panel with alpha, which isShown() does not see.
+    private boolean visible() {
+        for (View v = this; v != null; v = v.getParent() instanceof View ? (View) v.getParent() : null) {
+            if (v.getVisibility() != VISIBLE || v.getAlpha() == 0f) return false;
+        }
+        return true;
+    }
+
+    private void refreshCameras() {
+        Rect onScreen = new Rect();
+        for (int i = 0; i < packages.size() && i < strip.getChildCount(); i++) {
+            String pkg = packages.get(i);
+            if (!CameraActivity.isCamera(pkg) || !visible() || !strip.getChildAt(i).getLocalVisibleRect(onScreen) || !loading.add(pkg)) continue;
+            String url = CameraActivity.url(pkg);
+            Async.io(() -> {
+                Bitmap bitmap = null;
+                try {
+                    bitmap = Rtsp.snapshot(url, 480);
+                } catch (Exception ignored) {
+                }
+                Bitmap result = bitmap;
+                Async.main(() -> {
+                    loading.remove(pkg);
+                    if (result == null) return;
+                    snapshots.put(pkg, result);
+                    int index = packages.indexOf(pkg);
+                    if (index >= 0 && index < strip.getChildCount()) bind(strip.getChildAt(index), pkg);
+                });
+            });
+        }
+        postDelayed(refresh, 60_000);
     }
 
     // Scroll far enough to show the strip's padding and the 7dp tile margin from item_favorite.xml,
