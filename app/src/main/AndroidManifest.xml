@@ -74,9 +74,11 @@
             android:name=".AppsActivity"
             android:exported="false" />
 
+        <!-- Own process: a busy launcher main thread would hold up every key the TV sends to other apps. -->
         <service
             android:name=".CursorService"
             android:exported="true"
+            android:process=":cursor"
             android:label="@string/cursor_service_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>

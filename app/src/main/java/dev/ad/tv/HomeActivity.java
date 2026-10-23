@@ -50,6 +50,7 @@ public class HomeActivity extends Activity {
     private ActivityCursor cursor;
 
     private int appliedRevision = -1;
+    private int seenAppChanges = -1;
     private boolean weatherLoading;
     private boolean feedLoading;
     private boolean screensaver;
@@ -66,8 +67,8 @@ public class HomeActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             updateClock();
-            maybeRefreshWeather(false);
-            maybeRefreshFeed(false);
+            maybeRefreshWeather();
+            maybeRefreshFeed();
         }
     };
 
@@ -136,8 +137,7 @@ public class HomeActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Re-read icons/banners too: apps may have been installed or removed while away.
-        if (appliedRevision != -1) submitFavorites();
+        if (appliedRevision != -1 && seenAppChanges != Apps.changes()) submitFavorites();
         root.post(this::focusRecentApp);
     }
 
@@ -214,8 +214,11 @@ public class HomeActivity extends Activity {
         submitFavorites();
         btnInputs.setVisibility(Inputs.list(this).isEmpty() ? View.GONE : View.VISIBLE);
         applyFeed();
+        // The last fetch may be for another city.
+        weatherFetchedAt = 0;
+        if (WeatherRepo.cached(this, prefs.getCityLat(), prefs.getCityLon()) == null) weatherFailedAt = 0;
         showCachedWeather();
-        maybeRefreshWeather(true);
+        maybeRefreshWeather();
     }
 
     private void applyFeed() {
@@ -228,7 +231,12 @@ public class HomeActivity extends Activity {
             if (changed) showFeed(Collections.emptyList());
             FeedRepo.Cached cached = FeedRepo.cached(this, config);
             if (cached != null) showFeed(cached.items);
-            maybeRefreshFeed(feedItems.isEmpty());
+            // A key, host or source change clears the cache: fetch now, whatever happened to the last fetch.
+            if (changed || cached == null) {
+                feedFetchedAt = 0;
+                feedFailedAt = 0;
+            }
+            maybeRefreshFeed();
             if (!feedItems.isEmpty()) showFeed(feedItems);
         }
         String state = feedOn ? getString(config.kind.label) : getString(R.string.off);
@@ -237,6 +245,7 @@ public class HomeActivity extends Activity {
     }
 
     private void submitFavorites() {
+        seenAppChanges = Apps.changes();
         favList.submit(prefs.getFavorites());
         favPanel.setVisibility(favList.getPackages().isEmpty() ? View.GONE : View.VISIBLE);
     }
@@ -287,11 +296,11 @@ public class HomeActivity extends Activity {
         if (w != null) showWeather(w);
     }
 
-    private void maybeRefreshWeather(boolean force) {
+    private void maybeRefreshWeather() {
         long now = System.currentTimeMillis();
         if (weatherLoading) return;
-        if (!force && now - weatherFetchedAt < WeatherRepo.REFRESH_MS) return;
-        if (!force && now - weatherFailedAt < 5 * 60_000) return;
+        if (now - weatherFetchedAt < WeatherRepo.REFRESH_MS) return;
+        if (now - weatherFailedAt < 5 * 60_000) return;
         double lat = prefs.getCityLat();
         double lon = prefs.getCityLon();
         weatherLoading = true;
@@ -306,6 +315,10 @@ public class HomeActivity extends Activity {
             Async.main(() -> {
                 weatherLoading = false;
                 if (isDestroyed()) return;
+                if (lat != prefs.getCityLat() || lon != prefs.getCityLon()) {
+                    maybeRefreshWeather();
+                    return;
+                }
                 if (w == null) {
                     weatherFailedAt = System.currentTimeMillis();
                     return;
@@ -351,7 +364,7 @@ public class HomeActivity extends Activity {
         return t > 0 ? "+" + t : t < 0 ? "−" + (-t) : "0";
     }
 
-    private void maybeRefreshFeed(boolean force) {
+    private void maybeRefreshFeed() {
         if (!prefs.isFeedEnabled()) return;
         FeedRepo.Config config = feedConfig;
         if (config == null) return;
@@ -359,8 +372,8 @@ public class HomeActivity extends Activity {
         if (feedLoading) return;
         FeedRepo.Cached cached = FeedRepo.cached(this, config);
         feedFetchedAt = Math.max(feedFetchedAt, cached != null ? cached.fetchedAt : 0L);
-        if (!force && now - feedFetchedAt < FeedRepo.REFRESH_MS) return;
-        if (now - feedFailedAt < 10 * 60_000 && !force) return;
+        if (now - feedFetchedAt < FeedRepo.REFRESH_MS) return;
+        if (now - feedFailedAt < 10 * 60_000) return;
         feedLoading = true;
         Async.io(() -> {
             List<FeedItem> fetched = null;
@@ -377,7 +390,7 @@ public class HomeActivity extends Activity {
                 if (isDestroyed()) return;
                 // A mode switch during this fetch was skipped by the feedLoading guard.
                 if (feedConfig == null || !feedConfig.id().equals(config.id())) {
-                    maybeRefreshFeed(feedItems.isEmpty());
+                    maybeRefreshFeed();
                     return;
                 }
                 if (failure != null) {

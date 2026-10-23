@@ -1,8 +1,10 @@
 package dev.ad.tv;
 
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -31,7 +33,28 @@ final class Apps {
         "ru.more.play", "ru.ivi.client", "ru.mts.mtstv", "ru.rt.video.app.tv", "com.google.android.youtube.tvmusic"
     );
 
+    private static int changes;
+
     private Apps() {}
+
+    static int changes() {
+        return changes;
+    }
+
+    static void watch(Context context) {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        filter.addDataScheme("package");
+        context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent intent) {
+                changes++;
+            }
+        }, filter);
+    }
 
     static List<AppEntry> installed(Context context) {
         PackageManager pm = context.getPackageManager();

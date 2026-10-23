@@ -9,7 +9,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -19,6 +21,11 @@ final class HomeSwitch {
     static final String LAUNCHERX = "com.google.android.apps.tv.launcherx";
     static final String SETUPWRAITH = "com.google.android.tungsten.setupwraith";
     private static final String STOCK_HOME = LAUNCHERX + "/.home.HomeActivity";
+    // Kept on the TV, not in our data, so it survives a reinstall and scripts/setup.sh shares it.
+    private static final String KEPT_OFF = "/data/local/tmp/tv-home.setup-kept-off";
+    private static final String RECORD_KEPT_OFF = "pm list packages -d | grep -qx package:" + LAUNCHERX
+            + " || { pm list packages -d | grep -qx package:" + SETUPWRAITH
+            + " && touch " + KEPT_OFF + " || rm -f " + KEPT_OFF + "; }";
 
     static final class WifiOwnedException extends IOException {
         final Set<String> owners;
@@ -73,32 +80,61 @@ final class HomeSwitch {
             sh.run("appops set " + pkg + " GET_USAGE_STATS allow");
 
             // Disabling an app deletes the Wi-Fi networks it saved; on Google TV that is usually setupwraith.
+            String wifi = sh.run("dumpsys wifi | grep -o -E 'cname=[^ ]*|^Wi-Fi is [a-z]+'");
+            if (!wifi.contains("cname=") && !wifi.contains("Wi-Fi is")
+                    && !"0".equals(sh.run("settings get global wifi_on").trim())) {
+                throw new IOException(context.getString(R.string.wifi_unknown));
+            }
             Set<String> owners = new HashSet<>();
-            Matcher m = Pattern.compile("cname=([\\w.]+)").matcher(sh.run("dumpsys wifi | grep -o 'cname=[^ ]*'"));
+            Matcher m = Pattern.compile("cname=([\\w.]+)").matcher(wifi);
             while (m.find()) {
                 String owner = m.group(1);
                 if (owner.equals(LAUNCHERX) || owner.equals(SETUPWRAITH)) owners.add(owner);
             }
             if (!owners.isEmpty()) throw new WifiOwnedException(owners);
 
+            sh.run(RECORD_KEPT_OFF);
             log.accept("set-home-activity");
-            sh.run("cmd package set-home-activity " + pkg + "/" + HomeActivity.class.getName());
+            expect(sh.run("cmd package set-home-activity " + pkg + "/" + HomeActivity.class.getName()), "Success", "set-home-activity");
             // Both go together: launcherx off with setupwraith on drops HOME into setup's recovery loop.
             log.accept("disable " + SETUPWRAITH);
-            sh.run("pm disable-user --user 0 " + SETUPWRAITH);
+            String setup = sh.run("pm disable-user --user 0 " + SETUPWRAITH + " 2>&1");
+            if (!setup.contains("disabled-user") && !setup.contains("Unknown package")) {
+                throw new IOException(SETUPWRAITH + " is still on, " + LAUNCHERX + " was left on: " + setup.trim());
+            }
             log.accept("disable " + LAUNCHERX);
-            sh.run("pm disable-user --user 0 " + LAUNCHERX);
+            String launcher = sh.run("pm disable-user --user 0 " + LAUNCHERX);
+            if (!launcher.contains("disabled-user")) {
+                // Left off, the next run would record setupwraith as off before us and revert would never enable it.
+                String restored = keptOff(sh) || sh.run("pm enable " + SETUPWRAITH + " 2>&1").contains("new state: enabled")
+                        ? "" : "; " + SETUPWRAITH + " is left off";
+                throw new IOException("disable " + LAUNCHERX + ": " + launcher.trim() + restored);
+            }
         });
     }
 
     static void useStockLauncher(Context context, Consumer<String> log) throws IOException {
         withAdb(context, log, sh -> {
+            List<String> failed = new ArrayList<>();
             log.accept("enable " + LAUNCHERX);
-            sh.run("pm enable " + LAUNCHERX);
-            log.accept("enable " + SETUPWRAITH);
-            sh.run("pm enable " + SETUPWRAITH);
-            sh.run("cmd package set-home-activity " + STOCK_HOME);
+            if (!sh.run("pm enable " + LAUNCHERX).contains("new state: enabled")) failed.add(LAUNCHERX);
+            if (!keptOff(sh)) {
+                log.accept("enable " + SETUPWRAITH);
+                String setup = sh.run("pm enable " + SETUPWRAITH + " 2>&1");
+                if (!setup.contains("new state: enabled") && !setup.contains("Unknown package")) failed.add(SETUPWRAITH);
+            }
+            if (!sh.run("cmd package set-home-activity " + STOCK_HOME).contains("Success")) failed.add("set-home-activity");
+            if (!failed.isEmpty()) throw new IOException("not restored: " + String.join(", ", failed));
+            sh.run("rm -f " + KEPT_OFF);
         });
+    }
+
+    private static boolean keptOff(Shell sh) throws IOException {
+        return sh.run("[ -e " + KEPT_OFF + " ] && echo kept").contains("kept");
+    }
+
+    private static void expect(String output, String marker, String step) throws IOException {
+        if (!output.contains(marker)) throw new IOException(step + ": " + output.trim());
     }
 
     static void grantPermissions(Context context, Consumer<String> log) throws IOException {

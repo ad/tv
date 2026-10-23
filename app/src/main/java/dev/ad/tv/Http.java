@@ -15,6 +15,15 @@ final class Http {
     // MET Norway and Nominatim both reject requests without an identifying User-Agent.
     static final String USER_AGENT = "TVHome/" + BuildConfig.VERSION_NAME + " (+https://github.com/ad/tv)";
 
+    static final class Status extends IOException {
+        final int code;
+
+        Status(int code, String message) {
+            super(message);
+            this.code = code;
+        }
+    }
+
     private Http() {}
 
     static String get(String url) throws IOException {
@@ -25,7 +34,7 @@ final class Http {
         HttpURLConnection c = open(url, headers);
         try {
             int code = c.getResponseCode();
-            if (code < 200 || code > 299) throw new IOException("HTTP " + code + " for " + url.split("\\?", 2)[0]);
+            if (code < 200 || code > 299) throw new Status(code, "HTTP " + code + " for " + url.split("\\?", 2)[0]);
             try (InputStream in = c.getInputStream()) {
                 return new String(readAll(in), StandardCharsets.UTF_8);
             }
@@ -57,6 +66,8 @@ final class Http {
             try {
                 return get(base.replaceAll("/+$", "") + path, headers);
             } catch (Exception e) {
+                // A refused key is refused by every mirror.
+                if (e instanceof Status && ((Status) e).code == 401) throw e;
                 last = e;
             }
         }
