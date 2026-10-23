@@ -1,6 +1,7 @@
 package dev.ad.tv;
 
 import android.app.Activity;
+import android.content.Context;
 import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -24,6 +25,10 @@ public class AppsActivity extends Activity {
 
     @Override public boolean dispatchKeyEvent(KeyEvent event) {
         return cursor.onKey(event) || super.dispatchKeyEvent(event);
+    }
+
+    @Override protected void attachBaseContext(Context base) {
+        super.attachBaseContext(Lang.wrap(base));
     }
 
     @Override protected void onCreate(Bundle savedInstanceState) {

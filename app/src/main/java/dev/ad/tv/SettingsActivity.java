@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -29,12 +30,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class SettingsActivity extends Activity {
-    static final String EXTRA_PAGE = "page";
     private static final int REQ_VIDEO = 1;
 
     private interface AdbTask {
@@ -53,6 +54,10 @@ public class SettingsActivity extends Activity {
         return cursor.onKey(event) || super.dispatchKeyEvent(event);
     }
 
+    @Override protected void attachBaseContext(Context base) {
+        super.attachBaseContext(Lang.wrap(base));
+    }
+
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = Prefs.get(this);
@@ -63,8 +68,6 @@ public class SettingsActivity extends Activity {
         hint = findViewById(R.id.pageHint);
         cursor = new ActivityCursor(this);
         stack.add("main");
-        String page = getIntent().getStringExtra(EXTRA_PAGE);
-        if (page != null) stack.add(page);
         render(false);
     }
 
@@ -188,7 +191,20 @@ public class SettingsActivity extends Activity {
             }));
         row(getString(R.string.feed), on(prefs.isFeedEnabled()), () -> open("feed"));
         row(getString(R.string.cursor), cursorModeName(cursorMode()), () -> open("cursor"));
+        String language = prefs.getLanguage();
+        row(getString(R.string.language), languageName(language), () ->
+            choose(getString(R.string.language), Lang.TAGS, this::languageName, language, tag -> {
+                prefs.setLanguage(tag);
+                recreate();
+            }));
         row(getString(R.string.home_screen), getString(HomeSwitch.isOurs(this) ? R.string.home_this : R.string.home_stock), () -> open("home"));
+    }
+
+    private String languageName(String tag) {
+        if (tag.isEmpty()) return getString(R.string.language_system);
+        Locale locale = Locale.forLanguageTag(tag);
+        String name = locale.getDisplayLanguage(locale);
+        return name.substring(0, 1).toUpperCase(locale) + name.substring(1);
     }
 
     private String backgroundName() {
@@ -627,11 +643,7 @@ public class SettingsActivity extends Activity {
     }
 
     private String kindName(FeedKind k) {
-        switch (k) {
-            case MOVIE: return getString(R.string.kind_movies);
-            case TV: return getString(R.string.kind_series);
-            default: return getString(R.string.kind_both);
-        }
+        return getString(k.label);
     }
 
     private void pickLocalVideo() {

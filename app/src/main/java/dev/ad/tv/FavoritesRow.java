@@ -64,11 +64,11 @@ public class FavoritesRow extends HorizontalScrollView {
     private void bindAll() {
         View focused = strip.findFocus();
         int focusedIndex = focused == null ? -1 : strip.indexOfChild(focused);
-        int n = packages.isEmpty() ? 1 : packages.size();
+        int n = packages.size();
         while (strip.getChildCount() < n) strip.addView(newTile());
-        if (focusedIndex >= n) focusTile(n - 1);
+        if (focusedIndex >= n && n > 0) focusTile(n - 1);
         while (strip.getChildCount() > n) strip.removeViewAt(strip.getChildCount() - 1);
-        for (int i = 0; i < n; i++) bind(strip.getChildAt(i), i < packages.size() ? packages.get(i) : null);
+        for (int i = 0; i < n; i++) bind(strip.getChildAt(i), packages.get(i));
     }
 
     private View newTile() {
@@ -96,17 +96,6 @@ public class FavoritesRow extends HorizontalScrollView {
         icon.getLayoutParams().height = icon.getLayoutParams().width;
         icon.requestLayout();
         label.setTextSize(compact ? 11f : 14f);
-        if (pkg == null) {
-            banner.setVisibility(View.GONE);
-            fallback.setVisibility(View.VISIBLE);
-            icon.setImageResource(R.drawable.ic_apps);
-            label.setText(R.string.add_favorites);
-            tile.setContentDescription(null);
-            tile.setOnClickListener(x -> onClick.accept(null));
-            tile.setOnLongClickListener(null);
-            Views.mouseFriendly(tile);
-            return;
-        }
         Drawable b = Apps.banner(ctx, pkg);
         if (b != null) {
             banner.setVisibility(View.VISIBLE);
@@ -128,11 +117,13 @@ public class FavoritesRow extends HorizontalScrollView {
     }
 
     // HorizontalScrollView ignores padding here; RecyclerView kept the focused tile inside it.
+    // Plus the 7dp tile margin from item_favorite.xml, so the 1.1x focus scale is not clipped at the edge.
     @Override
     protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
         Rect r = new Rect(rect);
-        r.left -= getPaddingLeft();
-        r.right += getPaddingRight();
+        int margin = Views.dp(this, 7);
+        r.left -= getPaddingLeft() + margin;
+        r.right += getPaddingRight() + margin;
         return super.computeScrollDeltaToGetChildRectOnScreen(r);
     }
 }

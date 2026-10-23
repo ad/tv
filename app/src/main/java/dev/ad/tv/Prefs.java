@@ -207,6 +207,14 @@ final class Prefs {
         sp.edit().putString("tmdb_img_host", v.trim()).apply();
     }
 
+    String getLanguage() {
+        return sp.getString("language", "");
+    }
+
+    void setLanguage(String v) {
+        sp.edit().putString("language", v).apply();
+    }
+
     String getOpenIn() {
         return sp.getString("open_in", OpenIn.LAMPA.name());
     }

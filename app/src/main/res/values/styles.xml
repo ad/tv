@@ -21,7 +21,7 @@
     </style>
 
     <style name="Text.Clock">
-        <item name="android:textSize">120sp</item>
+        <item name="android:textSize">76sp</item>
         <item name="android:fontFamily">sans-serif-light</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:letterSpacing">-0.02</item>

@@ -11,11 +11,11 @@ import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,17 +30,21 @@ import java.util.Locale;
 
 public class HomeActivity extends Activity {
     private Prefs prefs;
+    private String language;
 
     private FrameLayout root;
     private TextView clock;
     private TextView date;
     private View weatherBox;
+    private View favPanel;
     private FavoritesRow favList;
     private View feedBox;
     private FeedRow feedList;
     private TextView feedCaption;
     private TextView topLabel;
     private ImageButton btnInputs;
+    private ImageButton btnFeed;
+    private View topBar;
 
     private VideoBackground video;
     private ActivityCursor cursor;
@@ -48,6 +52,8 @@ public class HomeActivity extends Activity {
     private int appliedRevision = -1;
     private boolean weatherLoading;
     private boolean feedLoading;
+    private boolean screensaver;
+    private boolean backDown;
     private List<FeedItem> feedItems = Collections.emptyList();
     private FeedRepo.Config feedConfig;
 
@@ -66,30 +72,40 @@ public class HomeActivity extends Activity {
     };
 
     @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(Lang.wrap(base));
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (CrashWatchdog.tripped(this)) {
             startActivity(new Intent(this, RescueActivity.class));
         }
         prefs = Prefs.get(this);
+        language = prefs.getLanguage();
         setContentView(R.layout.activity_home);
 
         root = findViewById(R.id.root);
         clock = findViewById(R.id.clock);
         date = findViewById(R.id.date);
         weatherBox = findViewById(R.id.weatherBox);
+        favPanel = findViewById(R.id.favPanel);
         favList = findViewById(R.id.favList);
         feedBox = findViewById(R.id.feedBox);
         feedList = findViewById(R.id.feedList);
         feedCaption = findViewById(R.id.feedCaption);
         topLabel = findViewById(R.id.topLabel);
         btnInputs = findViewById(R.id.btnInputs);
+        btnFeed = findViewById(R.id.btnFeed);
+        topBar = findViewById(R.id.topBar);
         video = new VideoBackground(findViewById(R.id.bgVideo));
 
         favList.setCallbacks(this::onFavoriteClick, this::onFavoriteLongClick);
         feedList.setCallbacks(this::onFeedClick, this::onFeedLongClick, this::onFeedSelected);
 
         setupTopButton(btnInputs, this::showInputs);
+        setupTopButton(btnFeed, this::cycleFeed);
         setupTopButton(findViewById(R.id.btnApps), () -> startActivity(new Intent(this, AppsActivity.class)));
         setupTopButton(findViewById(R.id.btnAppSettings), () -> startActivity(new Intent(this, SettingsActivity.class)));
         setupTopButton(findViewById(R.id.btnTvSettings),
@@ -106,6 +122,7 @@ public class HomeActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        if (!language.equals(prefs.getLanguage())) recreate();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_TIME_TICK);
         filter.addAction(Intent.ACTION_TIME_CHANGED);
@@ -120,7 +137,7 @@ public class HomeActivity extends Activity {
     protected void onResume() {
         super.onResume();
         // Re-read icons/banners too: apps may have been installed or removed while away.
-        if (appliedRevision != -1) favList.submit(prefs.getFavorites());
+        if (appliedRevision != -1) submitFavorites();
         root.post(this::focusRecentApp);
     }
 
@@ -129,6 +146,7 @@ public class HomeActivity extends Activity {
         super.onStop();
         unregisterReceiver(tick);
         video.stop();
+        setScreensaver(false);
     }
 
     @Override
@@ -136,6 +154,7 @@ public class HomeActivity extends Activity {
         super.onNewIntent(intent);
         // HOME pressed while already home: jump back to the favorites.
         if (Intent.ACTION_MAIN.equals(intent.getAction())) {
+            setScreensaver(false);
             feedList.select(0);
             favList.scrollTo(0, 0);
             favList.post(() -> favList.focusTile(0));
@@ -150,10 +169,41 @@ public class HomeActivity extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        // Toggle on key up, so the matching up never reaches a focused view.
+        if (screensaver) {
+            if (event.getAction() == KeyEvent.ACTION_UP) setScreensaver(false);
+            return true;
+        }
         if (cursor == null) cursor = new ActivityCursor(this);
         if (cursor.onKey(event)) return true;
-        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) return true;
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            // An app that closed on BACK down hands its stray up to us.
+            if (event.getAction() == KeyEvent.ACTION_DOWN) backDown = true;
+            else if (backDown) setScreensaver(true);
+            if (event.getAction() == KeyEvent.ACTION_UP) backDown = false;
+            return true;
+        }
         return super.dispatchKeyEvent(event);
+    }
+
+    // Hidden views are only transparent: taps and cursor clicks must not reach them.
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (!screensaver) return super.dispatchTouchEvent(event);
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) setScreensaver(false);
+        return true;
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        return screensaver || super.dispatchGenericMotionEvent(event);
+    }
+
+    private void setScreensaver(boolean on) {
+        screensaver = on;
+        for (View v : new View[] {topBar, feedBox, favPanel}) {
+            v.animate().alpha(on ? 0f : 1f).setDuration(300).start();
+        }
     }
 
     private void applySettings() {
@@ -161,25 +211,34 @@ public class HomeActivity extends Activity {
         appliedRevision = prefs.getRevision();
         root.setBackground(Backgrounds.drawable(prefs.getBackgroundPreset()));
         applyTileSize();
-        favList.submit(prefs.getFavorites());
+        submitFavorites();
         btnInputs.setVisibility(Inputs.list(this).isEmpty() ? View.GONE : View.VISIBLE);
-
-        boolean feedOn = prefs.isFeedEnabled();
-        feedBox.setVisibility(feedOn ? View.VISIBLE : View.GONE);
-        applyLayoutMode(feedOn);
-
+        applyFeed();
         showCachedWeather();
         maybeRefreshWeather(true);
+    }
 
+    private void applyFeed() {
+        boolean feedOn = prefs.isFeedEnabled();
+        feedBox.setVisibility(feedOn ? View.VISIBLE : View.GONE);
         FeedRepo.Config config = FeedRepo.Config.from(prefs);
         if (feedOn) {
-            if (feedConfig == null || !feedConfig.id().equals(config.id())) feedItems = Collections.emptyList();
+            boolean changed = feedConfig == null || !feedConfig.id().equals(config.id());
             feedConfig = config;
+            if (changed) showFeed(Collections.emptyList());
             FeedRepo.Cached cached = FeedRepo.cached(this, config);
             if (cached != null) showFeed(cached.items);
             maybeRefreshFeed(feedItems.isEmpty());
             if (!feedItems.isEmpty()) showFeed(feedItems);
         }
+        String state = feedOn ? getString(config.kind.label) : getString(R.string.off);
+        btnFeed.setContentDescription(getString(R.string.feed) + ": " + state);
+        btnFeed.setAlpha(feedOn ? 1f : 0.5f);
+    }
+
+    private void submitFavorites() {
+        favList.submit(prefs.getFavorites());
+        favPanel.setVisibility(favList.getPackages().isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private void applyTileSize() {
@@ -195,22 +254,27 @@ public class HomeActivity extends Activity {
         favList.getLayoutParams().height = (int) ((size.height + 14) * d);
         favList.requestLayout();
         int pad = (int) (size.panelPadding * d);
-        findViewById(R.id.favPanel).setPadding(pad, pad, pad, pad);
+        favPanel.setPadding(pad, pad, pad, pad);
     }
 
-    private void applyLayoutMode(boolean feedOn) {
-        clock.setTextSize(feedOn ? 76f : 132f);
-        date.setTextSize(feedOn ? 18f : 24f);
-        Space spacer = findViewById(R.id.headerSpacer);
-        spacer.setVisibility(feedOn ? View.GONE : View.VISIBLE);
-        ((LinearLayout.LayoutParams) spacer.getLayoutParams()).weight = feedOn ? 0f : 0.6f;
-        spacer.requestLayout();
+    private void cycleFeed() {
+        FeedKind kind = FeedRepo.Config.from(prefs).kind;
+        if (!prefs.isFeedEnabled()) {
+            prefs.setFeedEnabled(true);
+            prefs.setFeedKind(FeedKind.BOTH.name());
+        } else if (kind.ordinal() == FeedKind.values().length - 1) {
+            prefs.setFeedEnabled(false);
+        } else {
+            prefs.setFeedKind(FeedKind.values()[kind.ordinal() + 1].name());
+        }
+        applyFeed();
+        topLabel.setText(btnFeed.getContentDescription());
     }
 
     private void updateClock() {
         String pattern = DateFormat.is24HourFormat(this) ? "HH:mm" : "h:mm";
         clock.setText(LocalTime.now().format(DateTimeFormatter.ofPattern(pattern)));
-        Locale locale = Locale.getDefault();
+        Locale locale = getResources().getConfiguration().getLocales().get(0);
         date.setText(capitalize(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM", locale)), locale));
     }
 
@@ -264,10 +328,10 @@ public class HomeActivity extends Activity {
         ((TextView) findViewById(R.id.weatherToday)).setText(getString(
                 R.string.today_range, signed(w.today.min) + "…" + signed(w.today.max) + "°", precip(w.today.precipMm)));
 
-        LinearLayout row = findViewById(R.id.forecast);
+        FitRow row = findViewById(R.id.forecast);
         row.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(this);
-        Locale locale = Locale.getDefault();
+        Locale locale = getResources().getConfiguration().getLocales().get(0);
         for (WeatherDay d : w.next) {
             View card = inflater.inflate(R.layout.item_forecast, row, false);
             ((TextView) card.findViewById(R.id.fDay)).setText(
@@ -311,6 +375,11 @@ public class HomeActivity extends Activity {
             Async.main(() -> {
                 feedLoading = false;
                 if (isDestroyed()) return;
+                // A mode switch during this fetch was skipped by the feedLoading guard.
+                if (feedConfig == null || !feedConfig.id().equals(config.id())) {
+                    maybeRefreshFeed(feedItems.isEmpty());
+                    return;
+                }
                 if (failure != null) {
                     feedFailedAt = System.currentTimeMillis();
                     String message = failure.getMessage();
@@ -318,7 +387,7 @@ public class HomeActivity extends Activity {
                     return;
                 }
                 feedFetchedAt = System.currentTimeMillis();
-                if (feedConfig != null && feedConfig.id().equals(config.id())) showFeed(items);
+                showFeed(items);
             });
         });
     }
@@ -378,11 +447,7 @@ public class HomeActivity extends Activity {
     }
 
     private void onFavoriteClick(String pkg) {
-        if (pkg == null) {
-            startActivity(new Intent(this, SettingsActivity.class).putExtra(SettingsActivity.EXTRA_PAGE, "favorites"));
-        } else {
-            Apps.launch(this, pkg);
-        }
+        Apps.launch(this, pkg);
     }
 
     private void onFavoriteLongClick(String pkg) {
@@ -404,6 +469,10 @@ public class HomeActivity extends Activity {
     }
 
     private void focusRecentApp() {
+        if (favList.getPackages().isEmpty()) {
+            feedList.focusSelected();
+            return;
+        }
         int index = Math.max(0, favList.getPackages().indexOf(RecentApp.last(this)));
         favList.focusTile(index);
     }
