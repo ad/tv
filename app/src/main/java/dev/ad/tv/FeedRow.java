@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -189,6 +190,9 @@ public class FeedRow extends HorizontalScrollView {
         TextView label = card.findViewById(R.id.label);
         label.setVisibility(item == SWITCH ? View.VISIBLE : View.GONE);
         if (item == SWITCH) {
+            // Narrow, the card shows only its right edge from behind the first title.
+            ((FrameLayout.LayoutParams) label.getLayoutParams()).gravity = wide ? Gravity.CENTER : Gravity.END | Gravity.CENTER_VERTICAL;
+            label.requestLayout();
             card.setContentDescription(switchLabel);
             if (!switchLabel.contentEquals(label.getText())) {
                 label.setAlpha(0f);

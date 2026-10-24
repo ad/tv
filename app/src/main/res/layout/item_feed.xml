@@ -28,16 +28,13 @@
             android:padding="8dp"
             android:textColor="@color/text" />
 
-        <TextView
+        <dev.ad.tv.VerticalTextView
             android:id="@+id/label"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:drawablePadding="8dp"
-            android:drawableTop="@drawable/ic_swap"
+            android:layout_gravity="end|center_vertical"
             android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:maxLines="2"
+            android:maxLines="1"
             android:padding="8dp"
             android:textColor="@color/text"
             android:textSize="16sp"
