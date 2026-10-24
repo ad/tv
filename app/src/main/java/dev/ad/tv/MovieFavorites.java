@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 final class MovieFavorites {
     private MovieFavorites() {}
@@ -34,8 +35,8 @@ final class MovieFavorites {
             JSONArray arr = load(context);
             int i = indexOf(list(context), item);
             if (i >= 0) name = arr.getJSONObject(i).optString("open", name);
-            return OpenIn.valueOf(name);
-        } catch (JSONException | IllegalArgumentException e) {
+            return OpenIn.parse(name);
+        } catch (JSONException e) {
             return OpenIn.LAMPA;
         }
     }
@@ -48,9 +49,12 @@ final class MovieFavorites {
             if (i >= 0) {
                 JSONObject old = arr.getJSONObject(i);
                 FeedItem o = FeedItem.fromJson(old);
-                entry = new FeedItem(o.key, o.title, o.year, o.isTv, o.backdrop, o.poster,
+                // The soap id lives in the key, and only Soap TV can open a title by it.
+                boolean soap = item.key.startsWith("soap:");
+                String key = soap ? item.key : o.key;
+                entry = new FeedItem(key, o.title, o.year, o.isTv, o.backdrop, o.poster != null ? o.poster : item.poster,
                     o.tmdbId != null ? o.tmdbId : item.tmdbId, o.kpHd != null ? o.kpHd : item.kpHd)
-                    .toJson().put("open", old.optString("open", openIn.name()));
+                    .toJson().put("open", soap ? openIn.name() : old.optString("open", openIn.name()));
             } else {
                 entry = item.toJson().put("open", openIn.name());
             }
@@ -86,11 +90,16 @@ final class MovieFavorites {
         }
     }
 
-    // The same title reaches us from CUB, Kinopoisk and Lampa under different keys.
+    // The same title reaches us from CUB, Kinopoisk, Lampa and Soap TV under different keys.
     static boolean same(FeedItem a, FeedItem b) {
         if (a.tmdbId != null && b.tmdbId != null) return a.tmdbId.equals(b.tmdbId) && a.isTv == b.isTv;
         if (a.kpHd != null && b.kpHd != null) return a.kpHd.equals(b.kpHd);
-        return a.key.equals(b.key);
+        if (a.key.equals(b.key)) return true;
+        return a.isTv == b.isTv && !a.year.isEmpty() && a.year.equals(b.year) && norm(a.title).equals(norm(b.title));
+    }
+
+    static String norm(String title) {
+        return title.toLowerCase(Locale.ROOT).replace('ё', 'е').replaceAll("[^\\p{L}\\p{N}]", "");
     }
 
     private static int indexOf(List<FeedItem> items, FeedItem item) {
