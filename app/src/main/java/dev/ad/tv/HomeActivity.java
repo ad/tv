@@ -477,18 +477,20 @@ public class HomeActivity extends Activity {
 
     private void onFavoriteLongClick(String pkg) {
         String[] items = CameraActivity.isCamera(pkg)
-                ? new String[] {getString(R.string.remove_favorite)}
-                : new String[] {getString(R.string.remove_favorite), getString(R.string.app_info)};
+                ? new String[] {getString(R.string.open), getString(R.string.remove_favorite)}
+                : new String[] {getString(R.string.open), getString(R.string.remove_favorite), getString(R.string.app_info)};
         new AlertDialog.Builder(this)
                 .setTitle(Apps.label(this, pkg))
                 .setItems(items, (dialog, which) -> {
                     if (which == 0) {
+                        onFavoriteClick(pkg);
+                    } else if (which == 1) {
                         List<String> favorites = new ArrayList<>(prefs.getFavorites());
                         favorites.remove(pkg);
                         prefs.setFavorites(favorites);
                         prefs.touch();
                         applySettings();
-                    } else if (which == 1) {
+                    } else if (which == 2) {
                         Apps.openAppInfo(this, pkg);
                     }
                 })

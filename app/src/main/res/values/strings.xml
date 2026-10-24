@@ -36,6 +36,7 @@
     <string name="hidden_toast">Hidden. You can bring it back in settings.</string>
 
     <string name="add_favorite">Add to favorites</string>
+    <string name="open">Open</string>
     <string name="remove_favorite">Remove from favorites</string>
     <string name="app_info">App info</string>
 
@@ -73,8 +74,10 @@
     <string name="tile_compact">Compact</string>
     <string name="tile_medium">Medium</string>
     <string name="tile_large">Large</string>
+    <string name="move_first">Move to start</string>
     <string name="move_up">Move left</string>
     <string name="move_down">Move right</string>
+    <string name="move_last">Move to end</string>
     <plurals name="apps_count">
         <item quantity="one">%d app</item>
         <item quantity="other">%d apps</item>

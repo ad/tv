@@ -35,6 +35,7 @@
     <string name="hidden_toast">Скрыто. Вернуть можно в настройках.</string>
 
     <string name="add_favorite">В избранное</string>
+    <string name="open">Открыть</string>
     <string name="remove_favorite">Убрать из избранного</string>
     <string name="app_info">О приложении</string>
 
@@ -72,8 +73,10 @@
     <string name="tile_compact">Компактные</string>
     <string name="tile_medium">Средние</string>
     <string name="tile_large">Крупные</string>
+    <string name="move_first">В начало</string>
     <string name="move_up">Сдвинуть левее</string>
     <string name="move_down">Сдвинуть правее</string>
+    <string name="move_last">В конец</string>
     <plurals name="apps_count">
         <item quantity="one">%d приложение</item>
         <item quantity="few">%d приложения</item>

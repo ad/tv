@@ -303,13 +303,16 @@ public class SettingsActivity extends Activity {
     }
 
     private void reorder(String pkg) {
-        String[] items = {getString(R.string.move_up), getString(R.string.move_down), getString(R.string.remove_favorite)};
+        String[] items = {getString(R.string.move_first), getString(R.string.move_up), getString(R.string.move_down),
+            getString(R.string.move_last), getString(R.string.remove_favorite)};
         new AlertDialog.Builder(this).setTitle(Apps.label(this, pkg)).setItems(items, (d, which) -> {
             List<String> list = new ArrayList<>(prefs.getFavorites());
             int i = list.indexOf(pkg);
-            if (which == 0 && i > 0) list.add(i - 1, list.remove(i));
-            else if (which == 1 && i >= 0 && i < list.size() - 1) list.add(i + 1, list.remove(i));
-            else if (which == 2 && i >= 0) list.remove(i);
+            if (which == 0 && i > 0) list.add(0, list.remove(i));
+            else if (which == 1 && i > 0) list.add(i - 1, list.remove(i));
+            else if (which == 2 && i >= 0 && i < list.size() - 1) list.add(i + 1, list.remove(i));
+            else if (which == 3 && i >= 0) list.add(list.remove(i));
+            else if (which == 4 && i >= 0) list.remove(i);
             prefs.setFavorites(list);
             changed();
         }).show();
