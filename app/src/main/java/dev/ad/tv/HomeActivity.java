@@ -476,7 +476,7 @@ public class HomeActivity extends Activity {
             }
             return;
         }
-        openTitle(item, favoritesShown ? MovieFavorites.openIn(this, item) : OpenIn.valueOf(prefs.getOpenIn()), false);
+        openTitle(item, favoritesShown ? MovieFavorites.openIn(this, item) : OpenIn.parse(prefs.getOpenIn()), false);
     }
 
     private void openTitle(FeedItem item, OpenIn target, boolean remember) {
@@ -499,7 +499,7 @@ public class HomeActivity extends Activity {
                     }
                     if (which == targets.length) {
                         if (saved) MovieFavorites.remove(this, item);
-                        else MovieFavorites.add(this, item, OpenIn.valueOf(prefs.getOpenIn()));
+                        else MovieFavorites.add(this, item, OpenIn.parse(prefs.getOpenIn()));
                         // Otherwise the next first favorite would flip the row out of the feed.
                         if (MovieFavorites.list(this).isEmpty()) prefs.setFeedFavorites(false);
                         Toast.makeText(this, saved ? R.string.favorite_removed : R.string.favorite_added, Toast.LENGTH_SHORT).show();

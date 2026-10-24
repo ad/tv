@@ -349,7 +349,7 @@ public class SettingsActivity extends Activity {
                 prefs.setFeedKind(k.name());
                 changed();
             }));
-        OpenIn openIn = parse(OpenIn.class, prefs.getOpenIn(), OpenIn.LAMPA);
+        OpenIn openIn = OpenIn.parse(prefs.getOpenIn());
         row(getString(R.string.open_in_setting), FeedOpener.appName(this, openIn), () ->
             choose(getString(R.string.open_in_setting), Arrays.asList(OpenIn.values()), o -> FeedOpener.appName(this, o), openIn, o -> {
                 prefs.setOpenIn(o.name());

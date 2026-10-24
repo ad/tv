@@ -22,7 +22,8 @@ final class FeedOpener {
         boolean ok = switch (target) {
             case LAMPA -> openLampa(context, item);
             case KINOPOISK -> openKinopoisk(context, item);
-            case NUM, SOAP4U -> false;
+            case SOAP_TV -> openSoapTv(context, item);
+            case NUM -> false;
         };
         if (!ok) return Apps.launch(context, target.pkg);
         Prefs.get(context).setLastLaunchedPackage(target.pkg);
@@ -72,12 +73,23 @@ final class FeedOpener {
         return false;
     }
 
+    private static boolean openSoapTv(Context context, FeedItem item) {
+        Uri.Builder uri = new Uri.Builder().scheme("soap4ad").authority("open")
+            .appendQueryParameter("title", item.title).appendQueryParameter("type", item.isTv ? "tv" : "movie");
+        if (!item.year.isEmpty()) uri.appendQueryParameter("year", item.year);
+        if (item.key.startsWith("soap:")) {
+            uri.appendQueryParameter(item.isTv ? "sid" : "movie", item.key.substring(item.key.lastIndexOf(':') + 1));
+        }
+        return Apps.start(context, new Intent(Intent.ACTION_VIEW, uri.build()).setPackage(OpenIn.SOAP_TV.pkg)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+    }
+
     static String appName(Context context, OpenIn target) {
         return switch (target) {
             case LAMPA -> "Lampa";
             case KINOPOISK -> context.getString(R.string.kinopoisk);
             case NUM -> "NUM";
-            case SOAP4U -> "soap4u";
+            case SOAP_TV -> "Soap TV";
         };
     }
 }
