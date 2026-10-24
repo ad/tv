@@ -2,7 +2,7 @@
 
 Простой и быстрый лаунчер для Android TV.
 
-<img width="1280" height="720" alt="telegram-cloud-photo-size-2-5391360189568590564-y" src="https://github.com/user-attachments/assets/db53e0e8-c0af-4f70-a50c-6af5d3b3f306" />
+<img width="1920" height="1080" alt="tv-screenshot" src="https://github.com/user-attachments/assets/82735589-3d9d-45d1-a334-5eb108fd04e5" />
 
 - Большие часы и погода: сейчас, сегодня и три следующих дня (MET Norway). Город выбирается в настройках, поиск через OpenStreetMap.
 - Фон: 10 цветовых пресетов или видео без звука по кругу. Видео можно взять файлом с устройства, по ссылке (http/HLS) или встроенное 1080p.
