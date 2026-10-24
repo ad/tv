@@ -49,6 +49,9 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./build.sh
 
+      - name: Checks
+        run: scripts/check.sh
+
       - name: Upload APK (pull requests)
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
