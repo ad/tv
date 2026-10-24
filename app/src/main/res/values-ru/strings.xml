@@ -161,4 +161,13 @@
     <string name="add_camera">Добавить камеру</string>
     <string name="camera_url_hint">rtsp://логин:пароль@адрес:554/путь</string>
     <string name="camera_url_invalid">Адрес должен начинаться с rtsp://</string>
+    <string name="feed_list">Лента</string>
+    <string name="show_feed">Показать ленту</string>
+    <string name="show_favorites">Показать избранное</string>
+    <string name="no_favorite_movies">В избранном нет фильмов</string>
+    <string name="no_favorite_series">В избранном нет сериалов</string>
+    <string name="favorite_added">Добавлено в избранное</string>
+    <string name="favorite_removed">Убрано из избранного</string>
+    <string name="favorite_exists">Уже в избранном</string>
+    <string name="favorite_invalid">Не удалось добавить: неверная ссылка</string>
 </resources>

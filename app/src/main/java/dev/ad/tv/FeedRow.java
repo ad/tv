@@ -28,12 +28,16 @@ public class FeedRow extends HorizontalScrollView {
     // An overlay, not alpha, so a video background never shows through.
     private static final float DIM = 0.35f;
 
+    static final FeedItem SWITCH = new FeedItem("switch", "", "", false, null, null, null, null);
+
     private final LinearLayout strip;
     private Consumer<FeedItem> onClick;
     private Consumer<FeedItem> onLongClick;
     private Consumer<FeedItem> onSelected;
     private List<FeedItem> items = Collections.emptyList();
     private boolean more;
+    private String switchLabel;
+    private boolean switchChosen;
     private int selected;
     private boolean alignPending;
     private ValueAnimator animator;
@@ -54,10 +58,14 @@ public class FeedRow extends HorizontalScrollView {
         this.onSelected = onSelected;
     }
 
-    void submit(List<FeedItem> list, boolean withMore) {
+    void submit(List<FeedItem> list, boolean withMore, String switchLabel) {
+        int shift = (switchLabel != null ? 1 : 0) - offset();
+        this.switchLabel = switchLabel;
         items = list;
         more = withMore && !list.isEmpty();
-        selected = Math.max(0, Math.min(selected, getItemCount() - 1));
+        selected = Math.max(0, Math.min(selected + shift, getItemCount() - 1));
+        // An empty list parks the selection on the switch card; only the user may leave it there.
+        if (selected == 0 && offset() == 1 && !switchChosen) selected = Math.min(1, getItemCount() - 1);
         bindAll();
     }
 
@@ -66,7 +74,7 @@ public class FeedRow extends HorizontalScrollView {
     }
 
     int getItemCount() {
-        return items.size() + (more ? 1 : 0);
+        return offset() + items.size() + (more ? 1 : 0);
     }
 
     void select(int position) {
@@ -74,13 +82,21 @@ public class FeedRow extends HorizontalScrollView {
         bindAll();
     }
 
+    void selectFirst() {
+        select(Math.max(0, Math.min(offset(), getItemCount() - 1)));
+    }
+
     void selectKey(String key) {
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).key.equals(key)) {
-                select(i);
+                select(i + offset());
                 return;
             }
         }
+    }
+
+    private int offset() {
+        return switchLabel != null ? 1 : 0;
     }
 
     void focusSelected() {
@@ -88,7 +104,13 @@ public class FeedRow extends HorizontalScrollView {
     }
 
     private FeedItem item(int position) {
-        return position >= 0 && position < items.size() ? items.get(position) : null;
+        if (switchLabel != null && position == 0) return SWITCH;
+        int i = position - offset();
+        return i >= 0 && i < items.size() ? items.get(i) : null;
+    }
+
+    private static boolean hasMenu(FeedItem item) {
+        return item != null && item != SWITCH;
     }
 
     private void bindAll() {
@@ -123,8 +145,8 @@ public class FeedRow extends HorizontalScrollView {
         });
         v.setOnLongClickListener(card -> {
             FeedItem item = item(strip.indexOfChild(card));
-            if (item != null) onLongClick.accept(item);
-            return item != null;
+            if (hasMenu(item)) onLongClick.accept(item);
+            return hasMenu(item);
         });
         v.setOnFocusChangeListener((card, hasFocus) -> {
             card.setPivotX(0);
@@ -134,6 +156,7 @@ public class FeedRow extends HorizontalScrollView {
                     .translationZ(hasFocus ? Views.dp(card, 12) : 0f).setDuration(150).start();
             int pos = strip.indexOfChild(card);
             if (!hasFocus || pos < 0) return;
+            switchChosen = item(pos) == SWITCH;
             if (pos != selected) {
                 card.post(() -> {
                     if (pos < getItemCount()) animateSelection(selected, pos);
@@ -153,22 +176,24 @@ public class FeedRow extends HorizontalScrollView {
         dim(v, wide ? 0f : 1f);
         bindImage(v, item, wide);
         // No hover focus here: the selected card slides away, which would select the next one under the pointer.
-        Views.mouseFriendly(v, false, item == null ? null : () -> onLongClick.accept(item));
+        Views.mouseFriendly(v, false, hasMenu(item) ? () -> onLongClick.accept(item) : null);
     }
 
     private void bindImage(View card, FeedItem item, boolean wide) {
         ImageView image = card.findViewById(R.id.image);
         TextView title = card.findViewById(R.id.title);
-        card.setContentDescription(item == null ? card.getContext().getString(R.string.more) : item.title);
-        if (item == null) {
+        if (!hasMenu(item)) {
+            String label = item == null ? card.getContext().getString(R.string.more) : switchLabel;
+            card.setContentDescription(label);
             image.setScaleType(ImageView.ScaleType.CENTER);
-            image.setImageResource(R.drawable.ic_more);
+            image.setImageResource(item == null ? R.drawable.ic_more : R.drawable.ic_swap);
             image.setTag(null);
             card.setTag(null);
-            title.setText(R.string.more);
+            title.setText(label);
             title.setVisibility(View.VISIBLE);
             return;
         }
+        card.setContentDescription(item.title);
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         // Images.load keeps the old picture while loading: right for poster-to-backdrop, wrong for another title.
         if (!item.key.equals(card.getTag())) image.setImageDrawable(null);

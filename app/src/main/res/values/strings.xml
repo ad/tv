@@ -160,4 +160,13 @@
     <string name="add_camera">Add camera</string>
     <string name="camera_url_hint">rtsp://user:password@address:554/path</string>
     <string name="camera_url_invalid">The address must start with rtsp://</string>
+    <string name="feed_list">Feed</string>
+    <string name="show_feed">Show the feed</string>
+    <string name="show_favorites">Show favorites</string>
+    <string name="no_favorite_movies">No movies in favorites</string>
+    <string name="no_favorite_series">No series in favorites</string>
+    <string name="favorite_added">Added to favorites</string>
+    <string name="favorite_removed">Removed from favorites</string>
+    <string name="favorite_exists">Already in favorites</string>
+    <string name="favorite_invalid">Could not add: bad link</string>
 </resources>

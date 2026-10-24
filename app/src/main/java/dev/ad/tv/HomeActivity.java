@@ -57,6 +57,7 @@ public class HomeActivity extends Activity {
     private boolean feedLoading;
     private boolean screensaver;
     private boolean backDown;
+    private boolean favoritesShown;
     private List<FeedItem> feedItems = Collections.emptyList();
     private FeedRepo.Config feedConfig;
 
@@ -140,7 +141,14 @@ public class HomeActivity extends Activity {
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         registerReceiver(tick, filter);
         updateClock();
-        if (appliedRevision != -1) applySettings();
+        if (appliedRevision != -1) {
+            applySettings();
+            // Favorites added from Lampa or reordered by opening show up here, while the row is off screen.
+            if (prefs.isFeedEnabled() && !MovieFavorites.list(this).isEmpty()) {
+                showFeed(feedItems);
+                if (favoritesShown) feedList.selectFirst();
+            }
+        }
         video.start(prefs.getBackgroundVideo());
     }
 
@@ -165,7 +173,7 @@ public class HomeActivity extends Activity {
         // HOME pressed while already home: jump back to the favorites.
         if (Intent.ACTION_MAIN.equals(intent.getAction())) {
             setScreensaver(false);
-            feedList.select(0);
+            feedList.selectFirst();
             favList.scrollTo(0, 0);
             favList.post(() -> favList.focusTile(0));
         }
@@ -406,7 +414,7 @@ public class HomeActivity extends Activity {
                 if (failure != null) {
                     feedFailedAt = System.currentTimeMillis();
                     String message = failure.getMessage();
-                    if (feedItems.isEmpty()) feedCaption.setText(getString(R.string.feed_failed, message != null ? message : ""));
+                    if (feedItems.isEmpty() && !favoritesShown) feedCaption.setText(getString(R.string.feed_failed, message != null ? message : ""));
                     return;
                 }
                 feedFetchedAt = System.currentTimeMillis();
@@ -417,15 +425,34 @@ public class HomeActivity extends Activity {
 
     private void showFeed(List<FeedItem> items) {
         feedItems = items;
+        List<FeedItem> favorites = MovieFavorites.list(this);
+        favoritesShown = prefs.isFeedFavorites() && !favorites.isEmpty();
+        List<FeedItem> shown;
+        if (favoritesShown) {
+            FeedKind kind = FeedRepo.Config.from(prefs).kind;
+            shown = new ArrayList<>();
+            for (FeedItem f : favorites) if (kind == FeedKind.BOTH || f.isTv == (kind == FeedKind.TV)) shown.add(f);
+        } else {
+            shown = FeedRepo.visible(this, items);
+        }
         FeedRepo.Config config = feedConfig;
-        boolean more = config != null && config.source == FeedSource.CUB && OpenIn.LAMPA.name().equals(prefs.getOpenIn());
+        boolean more = !favoritesShown && config != null && config.source == FeedSource.CUB
+            && OpenIn.LAMPA.name().equals(prefs.getOpenIn());
+        String switchLabel = favorites.isEmpty() ? null : getString(favoritesShown ? R.string.favorites : R.string.feed_list);
         FeedItem focused = feedList.selectedItem();
-        feedList.submit(FeedRepo.visible(this, items), more);
+        feedList.submit(shown, more, switchLabel);
         if (focused != null) feedList.selectKey(focused.key);
         onFeedSelected(feedList.selectedItem());
     }
 
     private void onFeedSelected(FeedItem item) {
+        if (item == FeedRow.SWITCH) {
+            boolean empty = favoritesShown && feedList.getItemCount() == 1;
+            boolean series = FeedRepo.Config.from(prefs).kind == FeedKind.TV;
+            feedCaption.setText(empty ? getString(series ? R.string.no_favorite_series : R.string.no_favorite_movies)
+                : getString(favoritesShown ? R.string.show_feed : R.string.show_favorites));
+            return;
+        }
         if (item == null) {
             feedCaption.setText(feedList.getItemCount() > 0 ? getString(R.string.feed_more_in_lampa) : "");
             return;
@@ -438,33 +465,50 @@ public class HomeActivity extends Activity {
     }
 
     private void onFeedClick(FeedItem item) {
+        if (item == FeedRow.SWITCH) {
+            prefs.setFeedFavorites(!favoritesShown);
+            showFeed(feedItems);
+            return;
+        }
         if (item == null) {
             if (feedConfig != null) {
                 FeedOpener.openLampaList(this, getString(R.string.app_name), FeedRepo.cubLampaUrl(feedConfig));
             }
             return;
         }
-        FeedOpener.open(this, item, OpenIn.valueOf(prefs.getOpenIn()));
+        openTitle(item, favoritesShown ? MovieFavorites.openIn(this, item) : OpenIn.valueOf(prefs.getOpenIn()), false);
+    }
+
+    private void openTitle(FeedItem item, OpenIn target, boolean remember) {
+        if (FeedOpener.open(this, item, target)) MovieFavorites.opened(this, item, remember ? target : null);
     }
 
     private void onFeedLongClick(FeedItem item) {
         OpenIn[] targets = OpenIn.values();
-        String[] labels = new String[targets.length + 1];
-        for (int i = 0; i < targets.length; i++) {
-            labels[i] = getString(R.string.open_in, FeedOpener.appName(this, targets[i]));
-        }
-        labels[targets.length] = getString(R.string.hide);
+        boolean saved = MovieFavorites.contains(this, item);
+        List<String> labels = new ArrayList<>();
+        for (OpenIn target : targets) labels.add(getString(R.string.open_in, FeedOpener.appName(this, target)));
+        labels.add(getString(saved ? R.string.remove_favorite : R.string.add_favorite));
+        if (!favoritesShown) labels.add(getString(R.string.hide));
         new AlertDialog.Builder(this)
                 .setTitle(item.title)
-                .setItems(labels, (dialog, which) -> {
+                .setItems(labels.toArray(new String[0]), (dialog, which) -> {
                     if (which < targets.length) {
-                        FeedOpener.open(this, item, targets[which]);
+                        openTitle(item, targets[which], true);
                         return;
                     }
-                    FeedRepo.hide(this, item);
+                    if (which == targets.length) {
+                        if (saved) MovieFavorites.remove(this, item);
+                        else MovieFavorites.add(this, item, OpenIn.valueOf(prefs.getOpenIn()));
+                        // Otherwise the next first favorite would flip the row out of the feed.
+                        if (MovieFavorites.list(this).isEmpty()) prefs.setFeedFavorites(false);
+                        Toast.makeText(this, saved ? R.string.favorite_removed : R.string.favorite_added, Toast.LENGTH_SHORT).show();
+                    } else {
+                        FeedRepo.hide(this, item);
+                        Toast.makeText(this, R.string.hidden_toast, Toast.LENGTH_SHORT).show();
+                    }
                     showFeed(feedItems);
                     feedList.focusSelected();
-                    Toast.makeText(this, R.string.hidden_toast, Toast.LENGTH_SHORT).show();
                 })
                 .show();
     }
