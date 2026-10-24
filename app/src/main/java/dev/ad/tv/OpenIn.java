@@ -4,7 +4,7 @@ enum OpenIn {
     LAMPA("top.rootu.lampa"),
     KINOPOISK("ru.kinopoisk.tv"),
     NUM("ru.yourok.num"),
-    SOAP4ALL("com.filimons.soap4all");
+    SOAP4U("com.soap4u.android");
 
     final String pkg;
 
