@@ -89,7 +89,7 @@ public class FavoritesRow extends HorizontalScrollView {
         View v = LayoutInflater.from(getContext()).inflate(R.layout.item_favorite, strip, false);
         Views.roundCorners(v.findViewById(R.id.tileClip), 10);
         v.setOnFocusChangeListener((tile, hasFocus) -> {
-            float scale = hasFocus ? 1.1f : 1f;
+            float scale = hasFocus ? 1.08f : 1f;
             tile.animate().scaleX(scale).scaleY(scale).setDuration(120).start();
             tile.setTranslationZ(hasFocus ? 8f : 0f);
         });
@@ -171,12 +171,20 @@ public class FavoritesRow extends HorizontalScrollView {
         postDelayed(refresh, 60_000);
     }
 
-    // Scroll far enough to show the strip's padding and the 7dp tile margin from item_favorite.xml,
-    // so the 1.1x focus scale is not clipped at the edge.
+    // Past the row ends the global search would jump to the top bar.
+    @Override
+    public View focusSearch(View focused, int direction) {
+        View next = super.focusSearch(focused, direction);
+        boolean sideways = direction == FOCUS_LEFT || direction == FOCUS_RIGHT;
+        return sideways && (next == null || next.getParent() != strip) ? focused : next;
+    }
+
+    // Scroll far enough to show the strip's padding and the 5dp tile margin from item_favorite.xml,
+    // so the focus scale is not clipped at the edge.
     @Override
     protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
         Rect r = new Rect(rect);
-        int margin = Views.dp(this, 7);
+        int margin = Views.dp(this, 5);
         r.left -= strip.getPaddingLeft() + margin;
         r.right += strip.getPaddingRight() + margin;
         return super.computeScrollDeltaToGetChildRectOnScreen(r);

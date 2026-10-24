@@ -1,9 +1,9 @@
 package dev.ad.tv;
 
 enum TileSize {
-    COMPACT(112, 63, 6),
-    MEDIUM(136, 77, 8),
-    LARGE(160, 90, 10);
+    COMPACT(112, 63, 4),
+    MEDIUM(136, 77, 5),
+    LARGE(160, 90, 6);
 
     final int width;
     final int height;

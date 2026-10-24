@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -41,6 +42,7 @@ public class FeedRow extends HorizontalScrollView {
     private int selected;
     private boolean alignPending;
     private ValueAnimator animator;
+    private boolean pulling;
 
     public FeedRow(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -152,9 +154,11 @@ public class FeedRow extends HorizontalScrollView {
             card.setPivotX(0);
             card.setPivotY(card.getHeight() / 2f);
             float scale = hasFocus ? 1.03f : 1f;
-            card.animate().scaleX(scale).scaleY(scale)
-                    .translationZ(hasFocus ? Views.dp(card, 12) : 0f).setDuration(150).start();
             int pos = strip.indexOfChild(card);
+            // The shadow would show through the translucent switch and More cards.
+            boolean shadow = hasFocus && hasMenu(item(pos));
+            card.animate().scaleX(scale).scaleY(scale)
+                    .translationZ(shadow ? Views.dp(card, 12) : 0f).setDuration(150).start();
             if (!hasFocus || pos < 0) return;
             switchChosen = item(pos) == SWITCH;
             if (pos != selected) {
@@ -182,14 +186,29 @@ public class FeedRow extends HorizontalScrollView {
     private void bindImage(View card, FeedItem item, boolean wide) {
         ImageView image = card.findViewById(R.id.image);
         TextView title = card.findViewById(R.id.title);
-        if (!hasMenu(item)) {
-            String label = item == null ? card.getContext().getString(R.string.more) : switchLabel;
-            card.setContentDescription(label);
-            image.setScaleType(ImageView.ScaleType.CENTER);
-            image.setImageResource(item == null ? R.drawable.ic_more : R.drawable.ic_swap);
+        TextView label = card.findViewById(R.id.label);
+        label.setVisibility(item == SWITCH ? View.VISIBLE : View.GONE);
+        if (item == SWITCH) {
+            card.setContentDescription(switchLabel);
+            if (!switchLabel.contentEquals(label.getText())) {
+                label.setAlpha(0f);
+                label.animate().alpha(1f).setDuration(200).start();
+            }
+            label.setText(switchLabel);
+            image.setImageDrawable(null);
             image.setTag(null);
             card.setTag(null);
-            title.setText(label);
+            title.setVisibility(View.GONE);
+            return;
+        }
+        if (item == null) {
+            String more = card.getContext().getString(R.string.more);
+            card.setContentDescription(more);
+            image.setScaleType(ImageView.ScaleType.CENTER);
+            image.setImageResource(R.drawable.ic_more);
+            image.setTag(null);
+            card.setTag(null);
+            title.setText(more);
             title.setVisibility(View.VISIBLE);
             return;
         }
@@ -281,6 +300,14 @@ public class FeedRow extends HorizontalScrollView {
         super.addFocusables(views, direction, focusableMode);
     }
 
+    // Past the row ends the global search would jump to the top bar.
+    @Override
+    public View focusSearch(View focused, int direction) {
+        View next = super.focusSearch(focused, direction);
+        boolean sideways = direction == FOCUS_LEFT || direction == FOCUS_RIGHT;
+        return sideways && (next == null || next.getParent() != strip) ? focused : next;
+    }
+
     @Override
     protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
         return 0;
@@ -290,5 +317,30 @@ public class FeedRow extends HorizontalScrollView {
     @Override
     public boolean executeKeyEvent(KeyEvent event) {
         return false;
+    }
+
+    // Focus stays on the first title: landing on the switch card would select it and re-bind mid-animation.
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT && offset() == 1 && getItemCount() > 1
+                && strip.getChildAt(1).isFocused()) {
+            // Repeats would flip the lists back and forth while the key is held.
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0 && !pulling) pull();
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    private void pull() {
+        pulling = true;
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) strip.getChildAt(0).getLayoutParams();
+        strip.animate().translationX(lp.width + lp.getMarginEnd()).setStartDelay(0).setDuration(180)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> {
+                    onClick.accept(SWITCH);
+                    strip.animate().translationX(0f).setStartDelay(450).setDuration(420)
+                            .setInterpolator(new OvershootInterpolator(1.4f))
+                            .withEndAction(() -> pulling = false).start();
+                }).start();
     }
 }

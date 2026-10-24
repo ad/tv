@@ -96,11 +96,11 @@ public class HomeActivity extends Activity {
         weatherBox = findViewById(R.id.weatherBox);
         favPanel = findViewById(R.id.favPanel);
         favList = findViewById(R.id.favList);
-        // Scrolled tiles are cut just inside the 1dp rim of glass.xml, along its 26dp corners.
+        // Scrolled tiles are cut just inside the 1dp rim of glass.xml, along its 18dp corners.
         float rim = getResources().getDisplayMetrics().density;
         favPanel.setOutlineProvider(new ViewOutlineProvider() {
             @Override public void getOutline(View view, Outline outline) {
-                outline.setRoundRect(Math.round(rim), Math.round(rim), view.getWidth() - Math.round(rim), view.getHeight() - Math.round(rim), 25 * rim);
+                outline.setRoundRect(Math.round(rim), Math.round(rim), view.getWidth() - Math.round(rim), view.getHeight() - Math.round(rim), 17 * rim);
             }
         });
         favPanel.setClipToOutline(true);
@@ -277,8 +277,8 @@ public class HomeActivity extends Activity {
         }
         float d = getResources().getDisplayMetrics().density;
         favList.setTileSize(size);
-        // 7dp of focus room above and below the tiles.
-        favList.getLayoutParams().height = (int) ((size.height + 14) * d);
+        // 5dp of focus room above and below the tiles.
+        favList.getLayoutParams().height = (int) ((size.height + 10) * d);
         favList.requestLayout();
         int pad = (int) (size.panelPadding * d);
         favPanel.setPadding(pad, pad, pad, pad);
@@ -468,6 +468,9 @@ public class HomeActivity extends Activity {
         if (item == FeedRow.SWITCH) {
             prefs.setFeedFavorites(!favoritesShown);
             showFeed(feedItems);
+            // showFeed keeps the focused title, which may also sit deep in the other list.
+            feedList.selectFirst();
+            onFeedSelected(feedList.selectedItem());
             return;
         }
         if (item == null) {
