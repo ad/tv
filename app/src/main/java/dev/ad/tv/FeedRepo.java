@@ -205,7 +205,7 @@ final class FeedRepo {
         });
     }
 
-    private static String imageHost(Prefs prefs) {
+    static String imageHost(Prefs prefs) {
         String host = prefs.getTmdbImageHost();
         return (host.trim().isEmpty() ? TMDB_IMG : host).replaceAll("/+$", "");
     }

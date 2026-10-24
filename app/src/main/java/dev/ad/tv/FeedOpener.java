@@ -14,18 +14,21 @@ import java.util.List;
 final class FeedOpener {
     private FeedOpener() {}
 
-    static void open(Context context, FeedItem item, OpenIn target) {
+    static boolean open(Context context, FeedItem item, OpenIn target) {
         if (!Apps.isInstalled(context, target.pkg)) {
             Toast.makeText(context, context.getString(R.string.install_app, appName(context, target)), Toast.LENGTH_LONG).show();
-            return;
+            return false;
         }
         boolean ok = switch (target) {
             case LAMPA -> openLampa(context, item);
             case KINOPOISK -> openKinopoisk(context, item);
             case NUM -> false;
+            // The stock app has no search entry point, so this falls back to a plain launch.
+            case SOAP4ALL -> search(context, target.pkg, item.title);
         };
-        if (!ok) Apps.launch(context, target.pkg);
-        else Prefs.get(context).setLastLaunchedPackage(target.pkg);
+        if (!ok) return Apps.launch(context, target.pkg);
+        Prefs.get(context).setLastLaunchedPackage(target.pkg);
+        return true;
     }
 
     static void openLampaList(Context context, String title, String url) {
@@ -52,9 +55,13 @@ final class FeedOpener {
                 return true;
             }
         }
+        return search(context, pkg, item.title);
+    }
+
+    private static boolean search(Context context, String pkg, String query) {
         return Apps.start(
             context,
-            new Intent(Intent.ACTION_SEARCH).setPackage(pkg).putExtra(SearchManager.QUERY, item.title)
+            new Intent(Intent.ACTION_SEARCH).setPackage(pkg).putExtra(SearchManager.QUERY, query)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         );
     }
@@ -76,6 +83,7 @@ final class FeedOpener {
             case LAMPA -> "Lampa";
             case KINOPOISK -> context.getString(R.string.kinopoisk);
             case NUM -> "NUM";
+            case SOAP4ALL -> "soap4all";
         };
     }
 }

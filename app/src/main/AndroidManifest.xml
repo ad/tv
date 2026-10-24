@@ -79,6 +79,22 @@
             android:name=".AppsActivity"
             android:exported="false" />
 
+        <!-- Opened from the Lampa plugin. An empty affinity keeps it out of the home task, so Lampa stays in front. -->
+        <activity
+            android:name=".FavAddActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="adtv" android:host="fav" />
+            </intent-filter>
+        </activity>
+
         <!-- Own process: a busy launcher main thread would hold up every key the TV sends to other apps. -->
         <service
             android:name=".CursorService"

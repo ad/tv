@@ -223,6 +223,22 @@ final class Prefs {
         sp.edit().putString("open_in", v).apply();
     }
 
+    String getMovieFavorites() {
+        return sp.getString("movie_favorites", "[]");
+    }
+
+    void setMovieFavorites(String v) {
+        sp.edit().putString("movie_favorites", v).apply();
+    }
+
+    boolean isFeedFavorites() {
+        return sp.getBoolean("feed_favorites", false);
+    }
+
+    void setFeedFavorites(boolean v) {
+        sp.edit().putBoolean("feed_favorites", v).apply();
+    }
+
     Set<String> getHiddenFeedItems() {
         return sp.getStringSet("feed_hidden", Set.of());
     }
