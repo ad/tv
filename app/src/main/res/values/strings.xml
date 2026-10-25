@@ -169,4 +169,10 @@
     <string name="favorite_removed">Removed from favorites</string>
     <string name="favorite_exists">Already in favorites</string>
     <string name="favorite_invalid">Could not add: bad link</string>
+    <string name="update_available">Update %1$s is available</string>
+    <string name="update_install">Update</string>
+    <string name="update_later">Later</string>
+    <string name="update_downloading">Downloading the update…</string>
+    <string name="update_failed">Update failed: %1$s</string>
+    <string name="update_allow_unknown">Allow TV Home to install apps in the security settings</string>
 </resources>

@@ -170,4 +170,10 @@
     <string name="favorite_removed">Убрано из избранного</string>
     <string name="favorite_exists">Уже в избранном</string>
     <string name="favorite_invalid">Не удалось добавить: неверная ссылка</string>
+    <string name="update_available">Доступно обновление %1$s</string>
+    <string name="update_install">Обновить</string>
+    <string name="update_later">Позже</string>
+    <string name="update_downloading">Скачиваю обновление…</string>
+    <string name="update_failed">Не удалось обновить: %1$s</string>
+    <string name="update_allow_unknown">Разрешите TV Home установку приложений в настройках безопасности</string>
 </resources>

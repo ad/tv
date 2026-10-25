@@ -8,6 +8,7 @@
     <uses-feature android:name="android.software.live_tv" android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
@@ -114,5 +115,9 @@
             android:name=".RescueActivity"
             android:exported="false"
             android:excludeFromRecents="true" />
+
+        <receiver
+            android:name=".Update$Receiver"
+            android:exported="false" />
     </application>
 </manifest>

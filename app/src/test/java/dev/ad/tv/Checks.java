@@ -12,6 +12,7 @@ public class Checks {
         check(!MovieFavorites.same(feed, item("tmdb:tv:2", "Пришелец", "2021", true, 2L)), "tmdb id decides first");
         check(OpenIn.parse("SOAP4U") == OpenIn.SOAP_TV, "old soap4u setting maps to Soap TV");
         check(OpenIn.parse("bogus") == OpenIn.LAMPA && OpenIn.parse(null) == OpenIn.LAMPA, "unknown setting falls back to Lampa");
+        check(Update.build("v1.2.26") == 26 && Update.build("v1") == -1 && Update.build("") == -1, "release tag build number");
         System.out.println("tv checks ok");
     }
 

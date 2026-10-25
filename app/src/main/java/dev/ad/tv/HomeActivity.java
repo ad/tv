@@ -157,6 +157,7 @@ public class HomeActivity extends Activity {
         super.onResume();
         if (appliedRevision != -1 && seenAppChanges != Apps.changes()) submitFavorites();
         root.post(this::focusRecentApp);
+        Update.check(this);
     }
 
     @Override
