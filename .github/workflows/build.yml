@@ -32,7 +32,7 @@ jobs:
         run: |
           if [ -z "$KEYSTORE_BASE64" ]; then
             if [ "${{ github.event_name }}" != "pull_request" ]; then
-              echo "::error::KEYSTORE_BASE64 secret is not set (see README → Releases)"
+              echo "::error::KEYSTORE_BASE64 secret is not set (see README → Ключ подписи)"
               exit 1
             fi
             exit 0
