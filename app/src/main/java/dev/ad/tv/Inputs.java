@@ -5,12 +5,20 @@ import android.content.Intent;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
+import android.os.Build;
+import android.view.KeyEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 final class Inputs {
     private Inputs() {}
+
+    /** Xiaomi's Input button sends MEDIA_RECORD, not TV_INPUT (cleanyourtv, MiTV-MOOQ0); elsewhere that is a real record key. */
+    static boolean isKey(int keyCode) {
+        return keyCode == KeyEvent.KEYCODE_TV_INPUT
+                || keyCode == KeyEvent.KEYCODE_MEDIA_RECORD && "Xiaomi".equalsIgnoreCase(Build.MANUFACTURER);
+    }
 
     static List<TvInput> list(Context context) {
         TvInputManager tim = context.getSystemService(TvInputManager.class);

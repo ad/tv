@@ -141,6 +141,8 @@
     <string name="home_use_this">Make this launcher the home screen</string>
     <string name="home_use_stock">Restore Android TV home</string>
     <string name="usage_access">Usage access (focus the last app)</string>
+    <string name="optimize">Speed up this TV</string>
+    <string name="optimize_hint">App caches, animations</string>
     <string name="adb_pair">Pair with this TV</string>
     <string name="adb_paired">Paired</string>
     <string name="adb_pair_hint">Not paired yet</string>

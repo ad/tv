@@ -423,6 +423,8 @@ public class SettingsActivity extends Activity {
         } else {
             row(getString(R.string.home_use_this), () -> runAdb(getString(R.string.home_use_this), () -> HomeSwitch.useThisLauncher(this, this::log)));
         }
+        row(getString(R.string.optimize), getString(R.string.optimize_hint), () ->
+            runAdb(getString(R.string.optimize), () -> HomeSwitch.optimize(this, this::log)));
         row(getString(R.string.usage_access), on(RecentApp.hasUsageAccess(this)), () ->
             runAdb(getString(R.string.usage_access), () -> HomeSwitch.grantPermissions(this, this::log)));
     }

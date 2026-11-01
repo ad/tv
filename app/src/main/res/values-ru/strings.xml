@@ -142,6 +142,8 @@
     <string name="home_use_this">Сделать этот лаунчер домашним</string>
     <string name="home_use_stock">Вернуть Android TV</string>
     <string name="usage_access">Доступ к истории (фокус на последнем приложении)</string>
+    <string name="optimize">Ускорить ТВ</string>
+    <string name="optimize_hint">Кэш приложений, анимации</string>
     <string name="adb_pair">Сопряжение с этим ТВ</string>
     <string name="adb_paired">Выполнено</string>
     <string name="adb_pair_hint">Ещё не выполнено</string>

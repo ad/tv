@@ -5,6 +5,7 @@ import android.accessibilityservice.GestureDescription;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.provider.Settings;
@@ -48,6 +49,13 @@ public final class CursorService extends AccessibilityService implements CursorH
 
     @Override
     public boolean onKeyEvent(KeyEvent event) {
+        // Only while we are HOME: otherwise the stock launcher's own input picker stays in charge.
+        if (Inputs.isKey(event.getKeyCode()) && HomeSwitch.isOurs(this)) {
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+                startActivity(new Intent(HomeActivity.SHOW_INPUTS, null, this, HomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            }
+            return true;
+        }
         CursorController c = controller;
         if (c == null) return false;
         Prefs prefs = prefs();

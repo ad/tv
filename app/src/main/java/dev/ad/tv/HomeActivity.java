@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Locale;
 
 public class HomeActivity extends Activity {
+    static final String SHOW_INPUTS = "dev.ad.tv.SHOW_INPUTS";
+    private AlertDialog inputsDialog;
+
     private Prefs prefs;
     private String language;
 
@@ -129,6 +132,11 @@ public class HomeActivity extends Activity {
             Apps.seedFavorites(this);
             applySettings();
         });
+        if (SHOW_INPUTS.equals(getIntent().getAction())) {
+            // Once only: a recreate() would show it again.
+            getIntent().setAction(Intent.ACTION_MAIN);
+            root.post(this::showInputs);
+        }
     }
 
     @Override
@@ -177,6 +185,9 @@ public class HomeActivity extends Activity {
             feedList.selectFirst();
             favList.scrollTo(0, 0);
             favList.post(() -> favList.focusTile(0));
+        } else if (SHOW_INPUTS.equals(intent.getAction())) {
+            setScreensaver(false);
+            showInputs();
         }
     }
 
@@ -195,6 +206,10 @@ public class HomeActivity extends Activity {
         }
         if (cursor == null) cursor = new ActivityCursor(this);
         if (cursor.onKey(event)) return true;
+        if (Inputs.isKey(event.getKeyCode())) {
+            if (event.getAction() == KeyEvent.ACTION_UP) showInputs();
+            return true;
+        }
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             // An app that closed on BACK down hands its stray up to us.
             if (event.getAction() == KeyEvent.ACTION_DOWN) backDown = true;
@@ -570,6 +585,7 @@ public class HomeActivity extends Activity {
     }
 
     private void showInputs() {
+        if (inputsDialog != null && inputsDialog.isShowing()) return;
         List<TvInput> inputs = Inputs.list(this);
         if (inputs.isEmpty()) {
             Toast.makeText(this, R.string.no_inputs, Toast.LENGTH_SHORT).show();
@@ -577,7 +593,7 @@ public class HomeActivity extends Activity {
         }
         String[] labels = new String[inputs.size()];
         for (int i = 0; i < labels.length; i++) labels[i] = inputs.get(i).label;
-        new AlertDialog.Builder(this)
+        inputsDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.inputs)
                 .setItems(labels, (dialog, which) -> Inputs.open(this, inputs.get(which)))
                 .show();
