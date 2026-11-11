@@ -32,7 +32,8 @@ final class HomeSwitch {
     private static final String HOME_INTENT = "-a android.intent.action.MAIN -c android.intent.category.HOME";
     // Homes that are also the TV's settings, Wi-Fi or Bluetooth (Fire TV, Hotack's LuminaOS): off, the TV is unusable.
     private static final Pattern UNSAFE_HOME = Pattern.compile("android|com\\.android\\.(systemui|settings|tv\\.settings)|com\\.amazon\\..*|com\\.htc\\.luminaos");
-    // free-my-tv's DEBLOAT minus YouTube Music (a default favorite) and HY300's stock home (needs JmLauncher handling).
+    // free-my-tv's DEBLOAT minus YouTube Music (a default favorite) and HY300's stock home (needs JmLauncher handling),
+    // plus Yandex TV junk; its screensaver too, since the launcher has its own.
     private static final List<String> DEBLOAT = List.of(
             "com.google.android.play.games",
             "com.miui.tv.analytics", "com.xiaomi.statistic", "com.mitv.tvhome.mitvplus", "com.xm.webcontent",
@@ -41,7 +42,8 @@ final class HomeSwitch {
             "com.tcl.repairguide", "com.tcl.ocean.instructions", "com.tcl.logkit",
             "tv.anoki.acr.anokiacroptin", "tv.anoki.acr.controller", "fusion.android.tv.demo", "com.expressluck.tvhelpmanual",
             "com.homwee.aipont", "com.homwee.help", "com.mediatek.tv.retaildemo", "com.electronic.manual",
-            "com.smartdevice.epopplayer", "com.coocaa.demonow.lightining", "com.smartdevice.recommendation");
+            "com.smartdevice.epopplayer", "com.coocaa.demonow.lightining", "com.smartdevice.recommendation",
+            "com.yandex.tv.bugreportsender", "com.yandex.android.advid", "com.yandex.devices.farm.companion", "com.yandex.tv.daydream");
     // Shared with scripts/setup.sh.
     private static final String DEBLOATED = "/data/local/tmp/tv-home.debloated";
     // Kept on the TV, not in our data, so it survives a reinstall and scripts/setup.sh shares it.
@@ -132,28 +134,37 @@ final class HomeSwitch {
 
     private static void useThisOnAndroidTv(Context context, Shell sh, Consumer<String> log) throws IOException {
         String pkg = context.getPackageName();
-        String recorded = sh.run("cat " + TV_STATE + " 2>/dev/null").trim().split("\\s+")[0];
+        List<String> state = new ArrayList<>(Arrays.asList(sh.run("cat " + TV_STATE + " 2>/dev/null").trim().split("\\s+")));
+        String recorded = state.remove(0);
+        String homes = sh.run("cmd package query-activities --brief " + HOME_INTENT);
         String stock = lastLine(sh.run("cmd package resolve-activity --brief " + HOME_INTENT));
-        // After a partial run HOME is already ours, and only the record still names the TV's own home.
-        if (stock.startsWith(pkg + "/") && recorded.contains("/")) stock = recorded;
-        // No default home (the chooser), Android's bare fallback or setup's recovery screen: not the TV's own home.
-        String stockPkg = stock.contains("/") && !stock.startsWith("android/") && !stock.contains("FallbackHome")
-                && !stock.startsWith(SETUPWRAITH + "/") ? stock.substring(0, stock.indexOf('/')) : pkg;
+        // HOME picked by hand in the system chooser leaves the TV's home on, so look among the other candidates.
+        if (!isTvHome(stock, pkg) && recorded.contains("/")) {
+            stock = recorded;
+        } else if (!isTvHome(stock, pkg)) {
+            // System only: a launcher the user installed is not the TV's own.
+            List<String> system = Arrays.asList(sh.run("pm list packages -s").split("\\s+"));
+            stock = Arrays.stream(homes.split("\\s+"))
+                    .filter(c -> isTvHome(c, pkg) && system.contains("package:" + c.substring(0, c.indexOf('/'))))
+                    .findFirst().orElse(stock);
+        }
+        String stockPkg = isTvHome(stock, pkg) ? stock.substring(0, stock.indexOf('/')) : pkg;
         if (UNSAFE_HOME.matcher(stockPkg).matches()) throw new IOException(stockPkg + " is this TV's home and more: not turned off");
         Set<String> enabled = enabledPackages(sh);
         List<String> off = new ArrayList<>();
         // setupwraith first: with the home off and it on, its RecoveryActivity takes HOME, and a restart there
         // factory-reset a Xiaomi (free-my-tv, MiTV-MOSR4).
-        if (sh.run("cmd package query-activities --brief " + HOME_INTENT).contains(SETUPWRAITH + "/")) off.add(SETUPWRAITH);
+        if (homes.contains(SETUPWRAITH + "/")) off.add(SETUPWRAITH);
         if (!stockPkg.equals(pkg)) off.add(stockPkg);
         if (!stockPkg.equals(TV_LAUNCHER)) off.add(TV_LAUNCHER);
         off.add(TV_RECOMMENDATIONS);
         off.removeIf(p -> !enabled.contains(p));
         checkWifi(context, sh, new HashSet<>(off));
 
-        // A rerun finds the stock home already off, so the first record is the one to keep.
-        String first = stockPkg.equals(pkg) ? "none" : stock;
-        sh.run("[ -e " + TV_STATE + " ] || printf '%s\\n' '" + first + "' " + String.join(" ", off) + " > " + TV_STATE);
+        // A rerun finds the stock home already off, so the recorded home and packages are the ones to keep.
+        String first = recorded.contains("/") ? recorded : stockPkg.equals(pkg) ? "none" : stock;
+        for (String p : off) if (!state.contains(p)) state.add(p);
+        sh.run("printf '%s\\n' '" + first + "' " + String.join(" ", state) + " > " + TV_STATE);
         log.accept("set-home-activity");
         expect(sh.run("cmd package set-home-activity " + pkg + "/" + HomeActivity.class.getName()), "Success", "set-home-activity");
         for (String p : off) {
@@ -279,6 +290,12 @@ final class HomeSwitch {
             if (disabling.contains(m.group(1))) owners.add(m.group(1));
         }
         if (!owners.isEmpty()) throw new WifiOwnedException(owners);
+    }
+
+    /** Not ours, the chooser, Android's bare fallback or setup's recovery screen. */
+    private static boolean isTvHome(String component, String pkg) {
+        return component.contains("/") && !component.startsWith(pkg + "/") && !component.startsWith("android/")
+                && !component.contains("FallbackHome") && !component.startsWith(SETUPWRAITH + "/");
     }
 
     private static String lastLine(String output) {

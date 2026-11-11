@@ -418,10 +418,10 @@ public class SettingsActivity extends Activity {
         hint.setText(getString(R.string.home_hint) + (isBlank(homeLog) ? "" : "\n\n" + homeLog));
         row(getString(R.string.home_current), getString(ours ? R.string.home_this : R.string.home_stock), () -> {});
         row(getString(R.string.adb_pair), getString(HomeSwitch.isPaired(this) ? R.string.adb_paired : R.string.adb_pair_hint), this::startPairing);
+        // Also while ours: HOME picked in the system chooser leaves the TV's own home on until this runs.
+        row(getString(R.string.home_use_this), () -> runAdb(getString(R.string.home_use_this), () -> HomeSwitch.useThisLauncher(this, this::log)));
         if (ours) {
             row(getString(R.string.home_use_stock), () -> runAdb(getString(R.string.home_use_stock), () -> HomeSwitch.useStockLauncher(this, this::log)));
-        } else {
-            row(getString(R.string.home_use_this), () -> runAdb(getString(R.string.home_use_this), () -> HomeSwitch.useThisLauncher(this, this::log)));
         }
         row(getString(R.string.optimize), getString(R.string.optimize_hint), () ->
             runAdb(getString(R.string.optimize), () -> HomeSwitch.optimize(this, this::log)));

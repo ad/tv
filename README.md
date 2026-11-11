@@ -53,9 +53,9 @@ scripts/setup.sh TV_IP:PORT tv-home-v1.2.N.apk
 scripts/setup.sh --revert TV_IP:PORT
 ```
 
-На Google TV скрипт и переключатель отключают `com.google.android.apps.tv.launcherx` и `com.google.android.tungsten.setupwraith`. На Android TV отключают текущий домашний экран ТВ (на Mi TV это PatchWall), `com.google.android.tvlauncher` с `com.google.android.tvrecommendations` и мастер настройки `setupwraith`, если он числится домашним экраном. Без последнего Mi TV может уйти в сброс до заводских. Перед этим проверяют, не сохранена ли Wi‑Fi сеть одним из этих пакетов: при отключении пакета его сеть удаляется. Если сеть сохранена ими, «забудьте» её в настройках и подключитесь заново.
+На Google TV скрипт и переключатель отключают `com.google.android.apps.tv.launcherx` и `com.google.android.tungsten.setupwraith`. На Android TV отключают домашний экран ТВ (на Mi TV это PatchWall, на Яндекс ТВ `com.yandex.tv.home`), даже если домашним уже выбран TV Home, `com.google.android.tvlauncher` с `com.google.android.tvrecommendations` и мастер настройки `setupwraith`, если он числится домашним экраном. Без последнего Mi TV может уйти в сброс до заводских. Перед этим проверяют, не сохранена ли Wi‑Fi сеть одним из этих пакетов: при отключении пакета его сеть удаляется. Если сеть сохранена ими, «забудьте» её в настройках и подключитесь заново.
 
-Заодно отключается мусор, если он есть на ТВ: Play Игры, телеметрия Xiaomi и промо-каналы Mi TV+, демо-режимы и инструкции TCL, Skyworth, KTC и других (список `DEBLOAT` в `HomeSwitch.java` взят из [Free My TV](https://github.com/simbasjungles/free-my-tv)). Пакет остаётся включённым, если от него зависят входы ТВ или кнопки пульта либо он сохранил Wi‑Fi сеть. «Вернуть» включает всё обратно.
+Заодно отключается мусор, если он есть на ТВ: Play Игры, телеметрия Xiaomi и промо-каналы Mi TV+, демо-режимы и инструкции TCL, Skyworth, KTC и других, телеметрия, рекламный ID и заставка Яндекс ТВ (список `DEBLOAT` в `HomeSwitch.java` основан на [Free My TV](https://github.com/simbasjungles/free-my-tv)). Пакет остаётся включённым, если от него зависят входы ТВ или кнопки пульта либо он сохранил Wi‑Fi сеть. «Вернуть» включает всё обратно.
 
 Если лаунчер упадёт 3 раза за 5 минут, вместо него откроется экран восстановления с кнопками «Попробовать снова», «Открыть Android TV» и «Вернуть Android TV».
 

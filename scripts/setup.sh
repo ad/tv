@@ -29,7 +29,8 @@ DEBLOAT="com.google.android.play.games
   com.tcl.repairguide com.tcl.ocean.instructions com.tcl.logkit
   tv.anoki.acr.anokiacroptin tv.anoki.acr.controller fusion.android.tv.demo com.expressluck.tvhelpmanual
   com.homwee.aipont com.homwee.help com.mediatek.tv.retaildemo com.electronic.manual
-  com.smartdevice.epopplayer com.coocaa.demonow.lightining com.smartdevice.recommendation"
+  com.smartdevice.epopplayer com.coocaa.demonow.lightining com.smartdevice.recommendation
+  com.yandex.tv.bugreportsender com.yandex.android.advid com.yandex.devices.farm.companion com.yandex.tv.daydream"
 # Shared with HomeSwitch.DEBLOATED.
 DEBLOATED=/data/local/tmp/tv-home.debloated
 # Software under the TV's inputs or the remote's Input key: off, HDMI showed "No signal" (free-my-tv #321).
@@ -79,6 +80,8 @@ restore_debloat() {
   done
   if [[ $ok == 1 ]]; then sh rm -f "$DEBLOATED"; fi
 }
+# Not ours, the chooser, Android's bare fallback or setup's recovery screen.
+tv_home() { [[ "$1" == */* && "$1" != "$PKG/"* && "$1" != android/* && "$1" != *FallbackHome* && "$1" != "$SETUPWRAITH/"* ]]; }
 resolve_home() { sh cmd package resolve-activity --brief $HOME_INTENT | tail -1 | tr -d ' ' || true; }
 
 if [[ $revert == 1 ]]; then
@@ -136,13 +139,21 @@ if [[ $google_tv == 1 ]]; then
   disabling="$LAUNCHERX $SETUPWRAITH"
 else
   stock=$(resolve_home)
-  recorded=$(sh "head -1 $TV_STATE 2>/dev/null || true")
-  # After a partial run HOME is already ours, and only the record still names the TV's own home.
-  [[ "$stock" == "$PKG/"* && "$recorded" == */* ]] && stock=$recorded
+  state=$(sh "cat $TV_STATE 2>/dev/null || true")
+  recorded=$(head -1 <<<"$state")
+  homes=$(sh cmd package query-activities --brief $HOME_INTENT || true)
+  # HOME picked by hand in the system chooser leaves the TV's home on, so look among the other candidates.
+  if ! tv_home "$stock"; then
+    if [[ "$recorded" == */* ]]; then
+      stock=$recorded
+    else
+      # System only: a launcher the user installed is not the TV's own.
+      system=$(sh pm list packages -s || true)
+      for c in $homes; do tv_home "$c" && grep -qx "package:${c%%/*}" <<<"$system" && { stock=$c; break; }; done
+    fi
+  fi
   stock_pkg=""
-  # No default home (the chooser), Android's bare fallback or setup's recovery screen: not the TV's own home.
-  [[ "$stock" == */* && "$stock" != android/* && "$stock" != *FallbackHome* && "$stock" != "$PKG/"* \
-    && "$stock" != "$SETUPWRAITH/"* ]] && stock_pkg=${stock%%/*}
+  tv_home "$stock" && stock_pkg=${stock%%/*}
   # Homes that are also the TV's settings, Wi-Fi or Bluetooth (Fire TV, Hotack's LuminaOS): off, the TV is unusable.
   if [[ "$stock_pkg" =~ ^(android|com\.android\.(systemui|settings|tv\.settings)|com\.amazon\..*|com\.htc\.luminaos)$ ]]; then
     echo "$stock_pkg is this TV's home and more: not turned off."
@@ -151,7 +162,7 @@ else
   candidates=""
   # setupwraith first: with the home off and it on, its RecoveryActivity takes HOME, and a restart there
   # factory-reset a Xiaomi (free-my-tv, MiTV-MOSR4).
-  [[ "$(sh cmd package query-activities --brief $HOME_INTENT)" == *"$SETUPWRAITH/"* ]] && candidates+=" $SETUPWRAITH"
+  [[ "$homes" == *"$SETUPWRAITH/"* ]] && candidates+=" $SETUPWRAITH"
   candidates+=" $stock_pkg"
   [[ "$stock_pkg" != "$TV_LAUNCHER" ]] && candidates+=" $TV_LAUNCHER"
   candidates+=" $TV_RECOMMENDATIONS"
@@ -177,10 +188,13 @@ for p in $disabling; do
 done
 
 if [[ $google_tv == 0 ]]; then
-  # A rerun finds the stock home already off, so the first record is the one to keep.
+  # A rerun finds the stock home already off, so the recorded home and packages are the ones to keep.
   first=none
   [[ -n "$stock_pkg" ]] && first=$stock
-  sh "[ -e $TV_STATE ] || printf '%s\\n' '$first' $disabling > $TV_STATE"
+  [[ "$recorded" == */* ]] && first=$recorded
+  pkgs=$(tail -n +2 <<<"$state" | tr '\n' ' ')
+  for p in $disabling; do [[ " $pkgs " == *" $p "* ]] || pkgs+=" $p"; done
+  sh "printf '%s\\n' '$first' $pkgs > $TV_STATE"
   [[ "$(sh cmd package set-home-activity "$HOME_ACTIVITY" || true)" == *Success* ]] || { echo "set-home-activity failed"; exit 1; }
   for p in $disabling; do
     [[ "$(sh pm disable-user --user 0 "$p" || true)" == *disabled-user* ]] || { echo "Could not turn off $p"; exit 1; }
