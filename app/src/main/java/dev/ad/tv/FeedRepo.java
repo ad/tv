@@ -24,7 +24,8 @@ final class FeedRepo {
     private static final List<String> CUB_DOMAINS = List.of("cub.black", "cub.red", "cub.best");
     private static final List<String> TMDB_API =
         List.of("https://apitmdb.cub.black/3", "https://apitmdb.cub.best/3", "https://lampa.byskaz.ru/tmdb/api/3");
-    private static final String TMDB_IMG = "https://imagetmdb.com";
+    // imagetmdb.com sits on Cloudflare, often unreachable in Russia without a VPN.
+    private static final String TMDB_IMG = "https://imagetmdb.cub.black";
     private static final String KP_API = "https://api.poiskkino.dev/v1.5/movie";
 
     private FeedRepo() {}

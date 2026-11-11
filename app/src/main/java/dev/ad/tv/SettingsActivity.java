@@ -381,7 +381,7 @@ public class SettingsActivity extends Activity {
                 changed();
             }));
         row(getString(R.string.tmdb_img_host), isBlank(prefs.getTmdbImageHost()) ? getString(R.string.default_value) : prefs.getTmdbImageHost(), () ->
-            askText(getString(R.string.tmdb_img_host), prefs.getTmdbImageHost(), "https://imagetmdb.com", text -> {
+            askText(getString(R.string.tmdb_img_host), prefs.getTmdbImageHost(), "https://imagetmdb.cub.black", text -> {
                 prefs.setTmdbImageHost(text);
                 FeedRepo.clearCache(this);
                 changed();
