@@ -83,6 +83,22 @@ adb shell input text 'ВАШ_КЛЮЧ'
 
 Нажатие на карточку избранного открывает её в том приложении, где её открывали последний раз через «Открыть в …». Только что добавленная из Lampa открывается в Lampa, из Soap TV — в Soap TV, из ленты — в приложении из настройки «Открывать в». Открытая карточка поднимается в начало списка при следующем возврате на главный экран.
 
+### Свои видео-фоны
+
+Выбор в настройках, раздел «Видео».
+
+- **С устройства:** файл берётся из MediaStore. Загрузите его по adb, обновите медиатеку и выдайте разрешение:
+
+  ```bash
+  adb push video.mp4 /sdcard/Movies/video.mp4
+  adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Movies/video.mp4
+  adb shell pm grant dev.ad.tv android.permission.READ_MEDIA_VIDEO
+  ```
+
+  Если файла нет в списке, запустите скан целиком: `adb shell content call --uri content://media/external/video/media --method scan_volume --arg external_primary`. Дальше «Видео» → «С устройства».
+- **По ссылке:** «Видео» → «Из URL», адрес прямого файла.
+- **В APK:** положите `.mp4` в `video/` и пересоберите. Другие форматы в APK не годятся: без сжатия хранится только mp4.
+
 ## Сборка
 
 Нужны JDK 17+ и Android SDK (platform 36).
