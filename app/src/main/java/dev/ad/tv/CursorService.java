@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.provider.Settings;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -53,6 +55,14 @@ public final class CursorService extends AccessibilityService implements CursorH
         if (Inputs.isKey(event.getKeyCode()) && HomeSwitch.isOurs(this)) {
             if (event.getAction() == KeyEvent.ACTION_UP) {
                 startActivity(new Intent(HomeActivity.SHOW_INPUTS, null, this, HomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            }
+            return true;
+        }
+        // Xiaomi's PatchWall button is a global key routed to the disabled PatchWall (cleanyourtv, MiTV-AXFR2).
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BUTTON_5 && !event.isFromSource(InputDevice.SOURCE_GAMEPAD)
+                && "Xiaomi".equalsIgnoreCase(Build.MANUFACTURER) && HomeSwitch.isOurs(this)) {
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+                startActivity(new Intent(Intent.ACTION_MAIN, null, this, HomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
             return true;
         }
