@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -664,8 +665,9 @@ public class SettingsActivity extends Activity {
     }
 
     private void pickLocalVideo() {
-        if (checkSelfPermission(Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[] {Manifest.permission.READ_MEDIA_VIDEO}, REQ_VIDEO);
+        String perm = Build.VERSION.SDK_INT >= 33 ? Manifest.permission.READ_MEDIA_VIDEO : Manifest.permission.READ_EXTERNAL_STORAGE;
+        if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {perm}, REQ_VIDEO);
             return;
         }
         List<String[]> videos = queryVideos();
@@ -691,14 +693,18 @@ public class SettingsActivity extends Activity {
 
     private List<String[]> queryVideos() {
         List<String[]> out = new ArrayList<>();
-        String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.RELATIVE_PATH};
+        // Before Android 10 there is no RELATIVE_PATH; DATA holds the full path including the name.
+        boolean relative = Build.VERSION.SDK_INT >= 29;
+        String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DISPLAY_NAME,
+            relative ? MediaStore.Video.Media.RELATIVE_PATH : MediaStore.Video.Media.DATA};
         try (Cursor c = getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection, null, null,
                 MediaStore.Video.Media.DATE_ADDED + " DESC")) {
             if (c == null) return out;
             while (c.moveToNext()) {
                 Uri uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, c.getLong(0));
                 String path = c.getString(2);
-                out.add(new String[] {uri.toString(), (path != null ? path : "") + c.getString(1)});
+                String name = relative ? (path != null ? path : "") + c.getString(1) : (path != null ? path : c.getString(1));
+                out.add(new String[] {uri.toString(), name});
             }
         }
         return out;

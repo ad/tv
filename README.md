@@ -20,7 +20,7 @@
 
 ## Установка
 
-Нужен ТВ на Android 11 (API 30) или новее. Переключение домашнего экрана работает на Google TV и Android TV, включая Mi TV с PatchWall.
+Нужен ТВ на Android 9 (API 28) или новее. Переключение домашнего экрана работает на Google TV и Android TV, включая Mi TV с PatchWall.
 
 В каждом [релизе](../../releases) один APK `tv-home-*.apk` со встроенным видео 1080p30 из папки `video/`.
 

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInstaller;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
@@ -88,7 +89,7 @@ final class Update {
         Async.io(() -> {
             PackageInstaller installer = app.getPackageManager().getPackageInstaller();
             PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-            params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED);
+            if (Build.VERSION.SDK_INT >= 31) params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED);
             int id = -1;
             try {
                 byte[] apk = retry(() -> Http.getBytes(url));
@@ -99,7 +100,7 @@ final class Update {
                         session.fsync(out);
                     }
                     Intent done = new Intent(app, Receiver.class);
-                    int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE;
+                    int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
                     session.commit(PendingIntent.getBroadcast(app, 0, done, flags).getIntentSender());
                 }
             } catch (Exception e) {

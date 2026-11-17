@@ -4,6 +4,7 @@ import android.app.AppOpsManager;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.Process;
 
 final class RecentApp {
@@ -13,8 +14,10 @@ final class RecentApp {
 
     static boolean hasUsageAccess(Context context) {
         AppOpsManager ops = context.getSystemService(AppOpsManager.class);
-        return ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.getPackageName()) ==
-            AppOpsManager.MODE_ALLOWED;
+        int mode = Build.VERSION.SDK_INT >= 29
+            ? ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.getPackageName())
+            : ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.getPackageName());
+        return mode == AppOpsManager.MODE_ALLOWED;
     }
 
     static String last(Context context) {
