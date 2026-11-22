@@ -81,7 +81,8 @@ final class FeedRepo {
     }
 
     private static File cacheFile(Context context) {
-        return new File(context.getCacheDir(), "feed.json");
+        // Renamed when items gain a field: an old cache would hide it until the next refresh, up to REFRESH_MS.
+        return new File(context.getCacheDir(), "feed-v2.json");
     }
 
     static Cached cached(Context context, Config config) {
