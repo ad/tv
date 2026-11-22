@@ -27,8 +27,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class HomeActivity extends Activity {
     static final String SHOW_INPUTS = "dev.ad.tv.SHOW_INPUTS";
@@ -446,8 +448,15 @@ public class HomeActivity extends Activity {
         List<FeedItem> shown;
         if (favoritesShown) {
             FeedKind kind = FeedRepo.Config.from(prefs).kind;
+            // A favorite keeps the quality it was added with; the feed knows a newer one.
+            Map<String, String> fresh = new HashMap<>();
+            for (FeedItem i : items) if (i.tmdbId != null && i.quality != null) fresh.put(i.isTv + ":" + i.tmdbId, i.quality);
             shown = new ArrayList<>();
-            for (FeedItem f : favorites) if (kind == FeedKind.BOTH || f.isTv == (kind == FeedKind.TV)) shown.add(f);
+            for (FeedItem f : favorites) {
+                if (kind != FeedKind.BOTH && f.isTv != (kind == FeedKind.TV)) continue;
+                String q = f.tmdbId == null ? null : fresh.get(f.isTv + ":" + f.tmdbId);
+                shown.add(q == null ? f : f.withQuality(q));
+            }
         } else {
             shown = FeedRepo.visible(this, items);
         }

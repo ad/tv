@@ -28,6 +28,21 @@
             android:padding="8dp"
             android:textColor="@color/text" />
 
+        <TextView
+            android:id="@+id/quality"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="6dp"
+            android:background="@drawable/quality_bg"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:paddingHorizontal="5dp"
+            android:paddingVertical="1dp"
+            android:textColor="#FF000000"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
         <dev.ad.tv.VerticalTextView
             android:id="@+id/label"
             android:layout_width="wrap_content"

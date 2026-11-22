@@ -48,7 +48,7 @@ public class FavAddActivity extends Activity {
         String poster = tmdbImage(imageHost, "w342", uri.getQueryParameter("poster"));
         String backdrop = tmdbImage(imageHost, "w780", uri.getQueryParameter("backdrop"));
         return new FeedItem("tmdb:" + media + ":" + tmdb, title, year,
-            media.equals("tv"), backdrop, poster, Long.parseLong(tmdb), null);
+            media.equals("tv"), backdrop, poster, Long.parseLong(tmdb), null, uri.getQueryParameter("quality"));
     }
 
     private static String soapCover(String url) {

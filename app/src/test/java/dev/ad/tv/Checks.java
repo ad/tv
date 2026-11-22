@@ -13,6 +13,9 @@ public class Checks {
         check(OpenIn.parse("SOAP4U") == OpenIn.SOAP_TV, "old soap4u setting maps to Soap TV");
         check(OpenIn.parse("bogus") == OpenIn.LAMPA && OpenIn.parse(null) == OpenIn.LAMPA, "unknown setting falls back to Lampa");
         check(Update.build("v1.2.26") == 26 && Update.build("v1") == -1 && Update.build("") == -1, "release tag build number");
+        check("WEBDL".equals(FeedItem.quality(" webdl ")) && "4K".equals(FeedItem.quality("4K")), "quality is upper-cased");
+        check(FeedItem.quality(null) == null && FeedItem.quality("") == null && FeedItem.quality("<b>4K</b>") == null
+            && FeedItem.quality("WEBDL 1080p HDR") == null, "odd quality is dropped");
         System.out.println("tv checks ok");
     }
 

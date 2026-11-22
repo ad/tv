@@ -53,7 +53,8 @@ final class MovieFavorites {
                 boolean soap = item.key.startsWith("soap:");
                 String key = soap ? item.key : o.key;
                 entry = new FeedItem(key, o.title, o.year, o.isTv, o.backdrop, o.poster != null ? o.poster : item.poster,
-                    o.tmdbId != null ? o.tmdbId : item.tmdbId, o.kpHd != null ? o.kpHd : item.kpHd)
+                    o.tmdbId != null ? o.tmdbId : item.tmdbId, o.kpHd != null ? o.kpHd : item.kpHd,
+                    item.quality != null ? item.quality : o.quality)
                     .toJson().put("open", soap ? openIn.name() : old.optString("open", openIn.name()));
             } else {
                 entry = item.toJson().put("open", openIn.name());

@@ -188,7 +188,10 @@ public class FeedRow extends HorizontalScrollView {
         ImageView image = card.findViewById(R.id.image);
         TextView title = card.findViewById(R.id.title);
         TextView label = card.findViewById(R.id.label);
+        TextView quality = card.findViewById(R.id.quality);
         label.setVisibility(item == SWITCH ? View.VISIBLE : View.GONE);
+        quality.setVisibility(item != null && item.quality != null ? View.VISIBLE : View.GONE);
+        if (item != null) quality.setText(item.quality);
         if (item == SWITCH) {
             // Narrow, the card shows only its right edge from behind the first title.
             ((FrameLayout.LayoutParams) label.getLayoutParams()).gravity = wide ? Gravity.CENTER : Gravity.END | Gravity.CENTER_VERTICAL;
@@ -216,7 +219,7 @@ public class FeedRow extends HorizontalScrollView {
             title.setVisibility(View.VISIBLE);
             return;
         }
-        card.setContentDescription(item.title);
+        card.setContentDescription(item.quality != null ? item.title + ", " + item.quality : item.title);
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         // Images.load keeps the old picture while loading: right for poster-to-backdrop, wrong for another title.
         if (!item.key.equals(card.getTag())) image.setImageDrawable(null);

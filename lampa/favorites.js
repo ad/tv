@@ -29,7 +29,8 @@
             + param('title', card.title || card.name)
             + param('year', String(date).slice(0, 4))
             + param('poster', card.poster_path)
-            + param('backdrop', card.backdrop_path));
+            + param('backdrop', card.backdrop_path)
+            + param('quality', card.release_quality));
     }
 
     Lampa.Manifest.plugins = {

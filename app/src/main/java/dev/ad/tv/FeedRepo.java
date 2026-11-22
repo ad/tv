@@ -246,7 +246,8 @@ final class FeedRepo {
                 backdrop != null ? img + "/t/p/w780" + backdrop : null,
                 poster != null ? img + "/t/p/w342" + poster : null,
                 id,
-                null
+                null,
+                FeedItem.optStringOrNull(o, "release_quality")
             ));
         }
         return out;
