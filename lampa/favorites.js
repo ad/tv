@@ -33,6 +33,21 @@
             + param('quality', card.release_quality));
     }
 
+    // Lampa collects the page's focusable buttons right after 'complite', so the button gets focus with the rest.
+    Lampa.Listener.follow('full', function (e) {
+        if (e.type !== 'complite' || !e.data || !e.data.movie) return;
+        var options = e.body.find('.full-start-new__buttons .button--options');
+        if (!options.length || e.body.find('.button--tv-home').length) return;
+        var button = $('<div class="full-start__button selector button--tv-home">'
+            + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
+            + '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 8v5M9.5 10.5h5"/></svg>'
+            + '<span>В избранное ТВ</span></div>');
+        button.on('hover:enter', function () {
+            add(e.data.movie);
+        });
+        options.before(button);
+    });
+
     Lampa.Manifest.plugins = {
         type: 'video',
         name: 'TV Home: в избранное',
