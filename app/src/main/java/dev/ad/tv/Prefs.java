@@ -151,6 +151,14 @@ final class Prefs {
         sp.edit().putBoolean("feed_on", v).apply();
     }
 
+    boolean isCameraStab() {
+        return sp.getBoolean("camera_stab", false);
+    }
+
+    void setCameraStab(boolean v) {
+        sp.edit().putBoolean("camera_stab", v).apply();
+    }
+
     String getFeedSource() {
         return sp.getString("feed_source", FeedSource.CUB.name());
     }

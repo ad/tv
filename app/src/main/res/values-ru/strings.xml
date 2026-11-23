@@ -160,6 +160,8 @@
     <string name="language">Язык</string>
     <string name="language_system">Как в системе</string>
     <string name="camera_error">Не удалось открыть поток камеры</string>
+    <string name="camera_stab_on">Стабилизация включена</string>
+    <string name="camera_stab_off">Стабилизация выключена</string>
     <string name="add_camera">Добавить камеру</string>
     <string name="camera_url_hint">rtsp://логин:пароль@адрес:554/путь</string>
     <string name="camera_url_invalid">Адрес должен начинаться с rtsp://</string>
